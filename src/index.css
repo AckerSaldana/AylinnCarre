@@ -80,3 +80,44 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Open Sauce Font */
+@font-face {
+  font-family: 'Open Sauce';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('/fonts/open-sauce.two-regular.woff2') format('woff2'),
+       
+       url('/fonts/open-sauce.two-regular.woff2') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sauce';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('/fonts/open-sauce.two-medium.woff2') format('woff2'),
+       
+       url('/fonts/open-sauce.two-medium.woff2') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sauce';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('/fonts/open-sauce.two-semibold.woff2') format('woff2'),
+       
+       url('/fonts/open-sauce.two-semibold.woff2') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sauce';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/open-sauce.two-bold.woff2') format('woff2'),
+       
+       url('/fonts/open-sauce.two-bold.woff2') format('truetype');
+}

@@ -45,8 +45,8 @@ const ProjectDetail = () => {
           images: [
             '/src/images/bouquet.jpg',
             '/src/images/bouquet-1.jpg',
-            '/src/images/bouquet-3.jpg',
-            '/src/images/bouquet-4.jpg'
+            '/src/images/bouquet-2.jpg',
+            '/src/images/bouquet-3.jpg'
           ],
           color: '#646cff'
         },
@@ -63,7 +63,7 @@ const ProjectDetail = () => {
           designProcess: 'La metáfora que inspiró este proyecto es la biznaga de yeso, una variante de la planta endémica del norte de México que recientemente se encontró en peligro de extinción.',
           awards: ['Seleccionado para exhibición en Milano Design Week y Salone Satellite 2025'],
           images: [
-            '/src/images/peque-biz-1.jpg',
+            '/src/images/peque-biz.jpg',
             '/src/images/peque-biz-2.jpg',
             '/src/images/peque-biz-3.jpg'
           ],

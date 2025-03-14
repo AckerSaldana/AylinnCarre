@@ -1,4 +1,3 @@
-// src/pages/Admin.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -18,12 +17,34 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  FormControlLabel,
+  Checkbox,
+  IconButton,
+  ImageList,
+  ImageListItem,
+  Tooltip,
+  Card,
+  CardMedia,
+  CardActions,
+  CardContent,
+  Divider
 } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import { getProjects, addProject, updateProject, deleteProject } from '../firebase/projectService';
+import { 
+  Add as AddIcon, 
+  Delete as DeleteIcon, 
+  Edit as EditIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  Image as ImageIcon,
+  Close as CloseIcon
+} from '@mui/icons-material';
+import { getProjects, addProject, updateProject, deleteProject, deleteProjectImage } from '../firebase/projectService';
 import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import ArrayField from '../components/ArrayField';
 
 const Admin = () => {
   const [projects, setProjects] = useState([]);
@@ -31,12 +52,15 @@ const Admin = () => {
   const [editingProject, setEditingProject] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [authenticated, setAuthenticated] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  
+  const [imageManagementOpen, setImageManagementOpen] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
+
   // Formulario inicial vacío
   const emptyForm = {
     title: '',
@@ -51,10 +75,9 @@ const Admin = () => {
     awards: [],
     featured: false
   };
-  
+
   const [formData, setFormData] = useState(emptyForm);
 
-  // Verificar autenticación al cargar
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       setAuthenticated(!!user);
@@ -64,9 +87,18 @@ const Admin = () => {
         setLoading(false);
       }
     });
-    
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (imageFiles.length > 0) {
+      const newPreviewImages = Array.from(imageFiles).map(file => URL.createObjectURL(file));
+      setPreviewImages(newPreviewImages);
+      return () => {
+        newPreviewImages.forEach(url => URL.revokeObjectURL(url));
+      };
+    }
+  }, [imageFiles]);
 
   // Cargar proyectos
   const fetchProjects = async () => {
@@ -128,21 +160,34 @@ const Admin = () => {
     setEditingProject(null);
     setFormData(emptyForm);
     setImageFiles([]);
+    setPreviewImages([]);
+    setCurrentImages([]);
     setFormOpen(true);
   };
 
   // Abrir formulario para editar proyecto existente
   const handleEdit = (project) => {
     setEditingProject(project.id);
-    // Convertir arrays almacenados como string a arrays reales si es necesario
+    const mentors = Array.isArray(project.mentors)
+      ? project.mentors
+      : (project.mentors ? String(project.mentors).split(',').map(item => item.trim()) : []);
+    const materials = Array.isArray(project.materials)
+      ? project.materials
+      : (project.materials ? String(project.materials).split(',').map(item => item.trim()) : []);
+    const awards = Array.isArray(project.awards)
+      ? project.awards
+      : (project.awards ? String(project.awards).split(',').map(item => item.trim()) : []);
     const projectData = {
       ...project,
-      mentors: Array.isArray(project.mentors) ? project.mentors : [],
-      materials: Array.isArray(project.materials) ? project.materials : [],
-      awards: Array.isArray(project.awards) ? project.awards : []
+      mentors,
+      materials,
+      awards,
+      featured: Boolean(project.featured)
     };
     setFormData(projectData);
     setImageFiles([]);
+    setPreviewImages([]);
+    setCurrentImages(project.images || []);
     setFormOpen(true);
   };
 
@@ -155,7 +200,6 @@ const Admin = () => {
   // Eliminar proyecto
   const handleDelete = async () => {
     if (!projectToDelete) return;
-    
     try {
       setLoading(true);
       await deleteProject(projectToDelete.id);
@@ -182,24 +226,27 @@ const Admin = () => {
   // Manejar cambios en el formulario
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
-    // Manejar checkboxes
     if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
       return;
     }
-    
     setFormData({ ...formData, [name]: value });
   };
 
   // Manejar cambios en campos de array (coma separados)
   const handleArrayChange = (e) => {
     const { name, value } = e.target;
-    
-    // Convertir string separado por comas a array
-    const arrayValue = value.split(',').map(item => item.trim()).filter(Boolean);
-    
+    const arrayValue = value
+      .split(/,(?=\s*[^,]*)/)
+      .map(item => item.trim())
+      .filter(Boolean);
     setFormData({ ...formData, [name]: arrayValue });
+  };
+
+  // Preparar string con comas para inputs
+  const prepareArrayForInput = (array) => {
+    if (!array || !Array.isArray(array)) return '';
+    return array.join(', ');
   };
 
   // Manejar selección de imágenes
@@ -208,45 +255,23 @@ const Admin = () => {
     setImageFiles(files);
   };
 
-  // Enviar formulario
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  // Eliminar una imagen del proyecto
+  const handleDeleteImage = async (imageUrl) => {
+    if (!editingProject) return;
     try {
       setLoading(true);
-      
-      if (editingProject) {
-        // Actualizar proyecto existente
-        const updated = await updateProject(editingProject, formData, imageFiles);
-        
-        setProjects(projects.map(p => p.id === editingProject ? updated : p));
-        setSnackbar({
-          open: true,
-          message: 'Proyecto actualizado correctamente',
-          severity: 'success'
-        });
-      } else {
-        // Añadir nuevo proyecto
-        const newProject = await addProject(formData, imageFiles);
-        
-        setProjects([newProject, ...projects]);
-        setSnackbar({
-          open: true,
-          message: 'Proyecto añadido correctamente',
-          severity: 'success'
-        });
-      }
-      
-      // Resetear formulario y cerrar
-      setFormData(emptyForm);
-      setImageFiles([]);
-      setFormOpen(false);
-      setEditingProject(null);
-    } catch (error) {
-      console.error("Error saving project: ", error);
+      await deleteProjectImage(editingProject, imageUrl);
+      setCurrentImages(currentImages.filter(url => url !== imageUrl));
       setSnackbar({
         open: true,
-        message: 'Error al guardar el proyecto',
+        message: 'Imagen eliminada correctamente',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error("Error deleting image: ", error);
+      setSnackbar({
+        open: true,
+        message: 'Error al eliminar la imagen',
         severity: 'error'
       });
     } finally {
@@ -254,7 +279,112 @@ const Admin = () => {
     }
   };
 
-  // Si no está autenticado, mostrar formulario de login
+  // Reordenar imágenes
+  const moveImageUp = (index) => {
+    if (index === 0) return;
+    const newImages = [...currentImages];
+    const temp = newImages[index];
+    newImages[index] = newImages[index - 1];
+    newImages[index - 1] = temp;
+    setCurrentImages(newImages);
+  };
+
+  const moveImageDown = (index) => {
+    if (index === currentImages.length - 1) return;
+    const newImages = [...currentImages];
+    const temp = newImages[index];
+    newImages[index] = newImages[index + 1];
+    newImages[index + 1] = temp;
+    setCurrentImages(newImages);
+  };
+
+  const setAsPrimaryImage = (index) => {
+    if (index === 0) return; // No hacer nada si ya es la principal
+    
+    // Crear una copia profunda del array de imágenes actuales
+    const newImages = [...currentImages];
+    
+    // Mover la imagen seleccionada a la primera posición
+    const primaryImage = newImages[index];
+    newImages.splice(index, 1);
+    newImages.unshift(primaryImage);
+    
+    // Actualizar el estado de las imágenes actuales
+    setCurrentImages(newImages);
+    
+    // Actualizar también el formData con las nuevas imágenes
+    setFormData(prevData => ({
+      ...prevData,
+      images: newImages
+    }));
+    
+    // Mostrar una notificación al usuario
+    setSnackbar({
+      open: true,
+      message: 'Imagen establecida como principal',
+      severity: 'success'
+    });
+  };
+
+  // Cerrar diálogo de gestión de imágenes y aplicar cambios
+  const handleImageManagementClose = () => {
+    // Asegurarse de guardar los cambios al cerrar el diálogo
+    setFormData(prevData => ({
+      ...prevData,
+      images: currentImages
+    }));
+    
+    setImageManagementOpen(false);
+  };
+
+  // Enviar formulario
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      
+      // Crear el objeto que se enviará a Firebase
+      const submitData = {
+        ...formData,
+        // Asegurarse de usar el array de imágenes actual
+        images: currentImages
+      };
+      
+      if (editingProject) {
+        const updated = await updateProject(editingProject, submitData, imageFiles);
+        setProjects(projects.map(p => p.id === editingProject ? updated : p));
+        setSnackbar({
+          open: true,
+          message: 'Proyecto actualizado correctamente',
+          severity: 'success'
+        });
+      } else {
+        const newProject = await addProject(submitData, imageFiles);
+        setProjects([newProject, ...projects]);
+        setSnackbar({
+          open: true,
+          message: 'Proyecto añadido correctamente',
+          severity: 'success'
+        });
+      }
+      setFormData(emptyForm);
+      setImageFiles([]);
+      setPreviewImages([]);
+      setCurrentImages([]);
+      setFormOpen(false);
+      setEditingProject(null);
+  } catch (error) {
+    console.error("Error saving project: ", error);
+    setSnackbar({
+      open: true,
+      message: 'Error al guardar el proyecto: ' + error.message,
+      severity: 'error'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
   if (!authenticated) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
@@ -262,7 +392,6 @@ const Admin = () => {
           <Typography variant="h4" component="h1" gutterBottom align="center">
             Administración de Proyectos
           </Typography>
-          
           <form onSubmit={handleLogin}>
             <TextField
               fullWidth
@@ -271,10 +400,9 @@ const Admin = () => {
               name="email"
               type="email"
               value={loginForm.email}
-              onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
               required
             />
-            
             <TextField
               fullWidth
               margin="normal"
@@ -282,10 +410,9 @@ const Admin = () => {
               name="password"
               type="password"
               value={loginForm.password}
-              onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
               required
             />
-            
             <Button
               type="submit"
               variant="contained"
@@ -297,16 +424,12 @@ const Admin = () => {
             </Button>
           </form>
         </Paper>
-        
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
-          onClose={() => setSnackbar({...snackbar, open: false})}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
         >
-          <Alert 
-            onClose={() => setSnackbar({...snackbar, open: false})} 
-            severity={snackbar.severity}
-          >
+          <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
             {snackbar.message}
           </Alert>
         </Snackbar>
@@ -320,139 +443,168 @@ const Admin = () => {
         <Typography variant="h4" component="h1">
           Administración de Proyectos
         </Typography>
-        
         <Box>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />}
-            onClick={handleAddNew}
-            sx={{ mr: 2 }}
-          >
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddNew} sx={{ mr: 2 }}>
             Nuevo Proyecto
           </Button>
-          
-          <Button 
-            variant="outlined" 
-            onClick={handleLogout}
-          >
+          <Button variant="outlined" onClick={handleLogout}>
             Cerrar sesión
           </Button>
         </Box>
       </Box>
-      
-      {/* Lista de proyectos */}
-      {loading ? (
-        <Typography>Cargando proyectos...</Typography>
+      {loading && !formOpen && !deleteConfirmOpen ? (
+        <Typography align="center" sx={{ my: 4 }}>
+          Cargando proyectos...
+        </Typography>
       ) : (
         <Grid container spacing={3}>
           {projects.map(project => (
             <Grid item xs={12} md={6} lg={4} key={project.id}>
-              <Paper 
+              <Paper
                 elevation={2}
-                sx={{ 
-                  p: 3,
+                sx={{
                   height: '100%',
                   display: 'flex',
-                  flexDirection: 'column'
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  borderRadius: 2
                 }}
               >
-                <Box 
-                  sx={{ 
-                    height: 200, 
-                    backgroundImage: `url(${project.images && project.images.length > 0 ? project.images[0] : ''})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    mb: 2
-                  }}
-                />
-                
-                <Typography variant="h6" gutterBottom>
-                  {project.title}
-                </Typography>
-                
-                <Box sx={{ display: 'flex', mb: 2 }}>
-                  <Chip 
-                    label={project.category} 
-                    size="small" 
-                    sx={{ mr: 1 }}
-                  />
-                  <Chip 
-                    label={project.year} 
-                    size="small" 
-                    variant="outlined"
-                  />
-                </Box>
-                
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary"
+                <Box
                   sx={{
+                    position: 'relative',
+                    height: 200,
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    mb: 2
+                    backgroundColor: '#f5f5f5'
                   }}
                 >
-                  {project.description}
-                </Typography>
-                
-                <Box sx={{ mt: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                  <Button 
+                  {project.featured && (
+                    <Chip
+                      icon={<StarIcon fontSize="small" />}
+                      label="Destacado"
+                      color="primary"
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        zIndex: 1
+                      }}
+                    />
+                  )}
+                  {project.images && project.images.length > 0 ? (
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={project.images[0]}
+                      alt={project.title}
+                      sx={{
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease-in-out',
+                        '&:hover': {
+                          transform: 'scale(1.05)'
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Paper
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: '#eee'
+                      }}
+                    >
+                      <ImageIcon sx={{ fontSize: 60, color: '#bbb' }} />
+                    </Paper>
+                  )}
+                </Box>
+                <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {project.title}
+                  </Typography>
+                  <Box sx={{ display: 'flex', mb: 2 }}>
+                    <Chip
+                      label={project.category}
+                      size="small"
+                      sx={{ mr: 1 }}
+                      color="secondary"
+                      variant="outlined"
+                    />
+                    <Chip label={project.year} size="small" variant="outlined" />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      mb: 2
+                    }}
+                  >
+                    {project.description}
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    {project.images && (
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        Imágenes: {project.images.length}
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+                <Divider />
+                <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
+                  <Button
                     startIcon={<EditIcon />}
                     onClick={() => handleEdit(project)}
                     size="small"
+                    variant="outlined"
+                    color="primary"
                   >
                     Editar
                   </Button>
-                  
-                  <Button 
+                  <Button
                     startIcon={<DeleteIcon />}
                     color="error"
                     onClick={() => confirmDelete(project)}
                     size="small"
+                    variant="outlined"
                   >
                     Eliminar
                   </Button>
-                </Box>
+                </CardActions>
               </Paper>
             </Grid>
           ))}
         </Grid>
       )}
-      
-      {/* Formulario (diálogo) para añadir/editar proyecto */}
-      <Dialog 
-        open={formOpen} 
-        onClose={() => setFormOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>
-          {editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}
-        </DialogTitle>
-        
-        <DialogContent>
+      {/* Diálogo para añadir/editar proyecto */}
+      <Dialog open={formOpen} onClose={() => !loading && setFormOpen(false)} fullWidth maxWidth="md" scroll="paper">
+        <DialogTitle>{editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
+        <DialogContent dividers>
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3} sx={{ mt: 0 }}>
+            <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Título"
                   name="title"
-                  value={formData.title}
+                  value={formData.title || ''}
                   onChange={handleChange}
                   required
+                  variant="outlined"
                 />
               </Grid>
-              
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
+                <FormControl fullWidth variant="outlined">
                   <InputLabel>Categoría</InputLabel>
                   <Select
                     name="category"
-                    value={formData.category}
+                    value={formData.category || ''}
                     onChange={handleChange}
                     label="Categoría"
                     required
@@ -460,174 +612,300 @@ const Admin = () => {
                     <MenuItem value="diseño industrial">Diseño Industrial</MenuItem>
                     <MenuItem value="diseño visual">Diseño Visual</MenuItem>
                     <MenuItem value="dirección de arte">Dirección de Arte</MenuItem>
+                    <MenuItem value="ilustración">Ilustración</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-              
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Año"
                   name="year"
-                  value={formData.year}
+                  value={formData.year || ''}
                   onChange={handleChange}
                   required
+                  variant="outlined"
                 />
               </Grid>
-              
+              <Grid item xs={12} sm={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.featured || false}
+                      onChange={handleChange}
+                      name="featured"
+                      color="primary"
+                    />
+                  }
+                  label="Proyecto destacado"
+                />
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Descripción"
                   name="description"
-                  value={formData.description}
+                  value={formData.description || ''}
                   onChange={handleChange}
                   multiline
                   rows={3}
                   required
+                  variant="outlined"
                 />
               </Grid>
-              
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Desafío"
                   name="challenge"
-                  value={formData.challenge}
+                  value={formData.challenge || ''}
                   onChange={handleChange}
                   multiline
-                  rows={2}
+                  rows={3}
+                  variant="outlined"
                 />
               </Grid>
-              
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Solución"
                   name="solution"
-                  value={formData.solution}
+                  value={formData.solution || ''}
                   onChange={handleChange}
                   multiline
-                  rows={2}
+                  rows={3}
+                  variant="outlined"
                 />
               </Grid>
-              
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Proceso de Diseño"
                   name="designProcess"
-                  value={formData.designProcess}
+                  value={formData.designProcess || ''}
                   onChange={handleChange}
                   multiline
-                  rows={2}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Mentores (separados por comas)"
-                  name="mentors"
-                  value={formData.mentors.join(', ')}
-                  onChange={handleArrayChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Materiales (separados por comas)"
-                  name="materials"
-                  value={formData.materials.join(', ')}
-                  onChange={handleArrayChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Reconocimientos (separados por comas)"
-                  name="awards"
-                  value={formData.awards.join(', ')}
-                  onChange={handleArrayChange}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Button
+                  rows={3}
                   variant="outlined"
-                  component="label"
-                  fullWidth
-                >
-                  {imageFiles.length > 0 
-                    ? `${imageFiles.length} imágenes seleccionadas` 
-                    : 'Seleccionar Imágenes'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    hidden
-                    onChange={handleImageChange}
-                  />
-                </Button>
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <ArrayField
+                  label="Mentores"
+                  values={formData.mentors || []}
+                  onChange={(newValues) => setFormData({ ...formData, mentors: newValues })}
+                  helperText="Escribe un nombre y presiona 'Añadir' o Enter"
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <ArrayField
+                  label="Materiales"
+                  values={formData.materials || []}
+                  onChange={(newValues) => setFormData({ ...formData, materials: newValues })}
+                  helperText="Ingresa cada material individualmente"
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <ArrayField
+                  label="Reconocimientos"
+                  values={formData.awards || []}
+                  onChange={(newValues) => setFormData({ ...formData, awards: newValues })}
+                  helperText="Agrega cada reconocimiento por separado"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Imágenes
+                </Typography>
+                {currentImages && currentImages.length > 0 && (
+                  <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {currentImages.length} imágenes existentes
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => setImageManagementOpen(true)}
+                        startIcon={<ImageIcon />}
+                      >
+                        Gestionar imágenes
+                      </Button>
+                    </Box>
+                    {currentImages.length > 0 && (
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="caption" display="block" gutterBottom>
+                          Imagen principal:
+                        </Typography>
+                        <Card sx={{ maxWidth: 300, mx: 'auto' }}>
+                          <CardMedia
+                            component="img"
+                            height="180"
+                            image={currentImages[0]}
+                            alt="Imagen principal"
+                          />
+                          <CardContent sx={{ p: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              La primera imagen se muestra como principal en el catálogo
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Box>
+                    )}
+                  </>
+                )}
+                <Box sx={{ mb: 3 }}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    fullWidth
+                    startIcon={<AddIcon />}
+                    sx={{ mb: 2 }}
+                  >
+                    {imageFiles.length > 0 
+                      ? `${imageFiles.length} nuevas imágenes seleccionadas` 
+                      : 'Subir nuevas imágenes'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      hidden
+                      onChange={handleImageChange}
+                    />
+                  </Button>
+                  {previewImages.length > 0 && (
+                    <Box>
+                      <Typography variant="caption" display="block" gutterBottom>
+                        Vista previa de nuevas imágenes:
+                      </Typography>
+                      <ImageList cols={4} rowHeight={120} sx={{ maxHeight: 250, overflow: 'auto' }}>
+                        {previewImages.map((img, index) => (
+                          <ImageListItem key={index}>
+                            <img
+                              src={img}
+                              alt={`Preview ${index + 1}`}
+                              loading="lazy"
+                              style={{ height: '100%', objectFit: 'cover' }}
+                            />
+                          </ImageListItem>
+                        ))}
+                      </ImageList>
+                    </Box>
+                  )}
+                </Box>
               </Grid>
             </Grid>
           </form>
         </DialogContent>
-        
         <DialogActions>
-          <Button onClick={() => setFormOpen(false)}>
+          <Button onClick={() => setFormOpen(false)} disabled={loading}>
             Cancelar
           </Button>
-          <Button 
-            variant="contained" 
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? 'Guardando...' : 'Guardar'}
+          <Button variant="contained" onClick={handleSubmit} disabled={loading} color="primary">
+            {loading ? 'Guardando...' : 'Guardar proyecto'}
           </Button>
         </DialogActions>
       </Dialog>
-      
-      {/* Diálogo de confirmación para eliminar */}
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-      >
-        <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>
-          <Typography>
-            ¿Estás seguro que deseas eliminar el proyecto "{projectToDelete?.title}"? Esta acción no se puede deshacer.
+      {/* Diálogo para gestionar imágenes existentes */}
+      <Dialog open={imageManagementOpen} onClose={handleImageManagementClose} fullWidth maxWidth="md">
+        <DialogTitle>
+          Gestionar imágenes
+          <IconButton
+            aria-label="close"
+            onClick={handleImageManagementClose}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" paragraph>
+            La primera imagen será utilizada como la principal en el catálogo y vista de detalle. 
+            Puedes reorganizar o eliminar imágenes según sea necesario.
           </Typography>
+          <Grid container spacing={2}>
+            {currentImages.map((image, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Paper elevation={3} sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden' }}>
+                  <CardMedia
+                    component="img"
+                    height="160"
+                    image={image}
+                    alt={`Imagen ${index + 1}`}
+                  />
+                  {index === 0 && (
+                    <Chip
+                      icon={<StarIcon fontSize="small" />}
+                      label="Principal"
+                      color="primary"
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        zIndex: 1
+                      }}
+                    />
+                  )}
+                  <Box sx={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 1 }}>
+                    <Tooltip title="Mover arriba">
+                      <IconButton
+                        size="small"
+                        color="inherit"
+                        onClick={() => moveImageUp(index)}
+                        disabled={index === 0}
+                      >
+                        <ArrowUpwardIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Mover abajo">
+                      <IconButton
+                        size="small"
+                        color="inherit"
+                        onClick={() => moveImageDown(index)}
+                        disabled={index === currentImages.length - 1}
+                      >
+                        <ArrowDownwardIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    {index !== 0 && (
+                      <Tooltip title="Establecer como principal">
+                        <IconButton
+                          size="small"
+                          color="inherit"
+                          onClick={() => setAsPrimaryImage(index)}
+                        >
+                          <StarBorderIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Eliminar imagen">
+                      <IconButton
+                        size="small"
+                        color="inherit"
+                        onClick={() => handleDeleteImage(image)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleDelete}
-            color="error"
-            variant="contained"
-          >
-            Eliminar
+          <Button onClick={handleImageManagementClose} variant="outlined">
+            Guardar cambios
           </Button>
         </DialogActions>
       </Dialog>
-      
-      {/* Snackbar para notificaciones */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({...snackbar, open: false})}
-      >
-        <Alert 
-          onClose={() => setSnackbar({...snackbar, open: false})} 
-          severity={snackbar.severity}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

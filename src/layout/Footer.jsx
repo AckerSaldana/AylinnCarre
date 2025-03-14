@@ -176,21 +176,6 @@ const Footer = () => {
                 Inicio
               </Link>
               
-              <Link 
-                component={RouterLink} 
-                to="/projects" 
-                color="text.secondary"
-                sx={{
-                  textDecoration: 'none',
-                  transition: 'color 0.3s ease',
-                  fontFamily: '"Open Sauce", sans-serif',
-                  '&:hover': {
-                    color: 'text.primary'
-                  }
-                }}
-              >
-                Proyectos
-              </Link>
               
               <Link 
                 component={RouterLink} 

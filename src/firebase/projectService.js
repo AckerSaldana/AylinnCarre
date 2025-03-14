@@ -101,8 +101,9 @@ export const updateProject = async (id, projectData, newImageFiles = []) => {
       throw new Error('Project not found');
     }
     
-    const currentData = projectSnapshot.data();
-    let imageUrls = currentData.images || [];
+    // CAMBIO IMPORTANTE: Usar las imágenes del projectData directamente
+    // en lugar de las del documento actual
+    let imageUrls = projectData.images || [];
     
     // Subir nuevas imágenes si existen
     if (newImageFiles.length > 0) {
@@ -116,19 +117,21 @@ export const updateProject = async (id, projectData, newImageFiles = []) => {
         })
       );
       
-      // Actualizar array de imágenes
+      // Añadir nuevas imágenes al final del array existente
       imageUrls = [...imageUrls, ...newImageUrls];
     }
     
-    // Actualizar proyecto
+    // Crear una copia de projectData para no modificar el original
     const updatedData = {
       ...projectData,
       images: imageUrls,
       updatedAt: serverTimestamp()
     };
     
+    // Actualizar el documento en Firestore
     await updateDoc(docRef, updatedData);
     
+    // Devolver objeto actualizado
     return {
       id,
       ...updatedData

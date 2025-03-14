@@ -30,6 +30,7 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon
 } from '@mui/icons-material';
+import profileImg from '../images/profile.jpg';
 
 const Resume = () => {
   const theme = useTheme();
@@ -221,7 +222,7 @@ const Resume = () => {
                 backgroundColor: 'white'
               }}>
                 <Avatar
-                  src="src/images/profile.jpg"
+                  src={profileImg}
                   alt="Aylinn Carré"
                   sx={{
                     width: 160,

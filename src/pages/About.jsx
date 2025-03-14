@@ -14,6 +14,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import profileImg from '../images/profile.jpg';
 
 const About = () => {
   const theme = useTheme();
@@ -92,7 +93,7 @@ const About = () => {
             <Box sx={{ position: 'sticky', top: 100 }}>
               <Box
                 component="img"
-                src="src/images/profile.jpg"
+                src={profileImg}
                 alt="Aylinn Carré"
                 sx={{
                   width: '100%',

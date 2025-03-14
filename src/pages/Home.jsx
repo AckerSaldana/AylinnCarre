@@ -25,6 +25,21 @@ import {
 } from '@mui/icons-material';
 import { useProjects } from '../context/ProjectContext';
 import LazyImage from '../components/LazyImage';
+import profileImg from '../images/profile.jpg';
+
+<Box
+  component="img"
+  src={profileImg}
+  alt="Aylinn Carré"
+  sx={{
+    width: '100%',
+    maxWidth: 480,
+    height: 'auto',
+    objectFit: 'contain',
+    boxShadow: '20px 20px 0px rgba(0,0,0,0.05)'
+  }}
+/>
+
 
 const Home = () => {
   const theme = useTheme();
@@ -270,7 +285,7 @@ const Home = () => {
             <Grid item xs={12} md={6} sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
               <Box
                 component="img"
-                src="src/images/profile.jpg"
+                src={profileImg}
                 alt="Aylinn Carré"
                 sx={{
                   width: '100%',

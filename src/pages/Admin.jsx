@@ -45,6 +45,7 @@ import { getProjects, addProject, updateProject, deleteProject, deleteProjectIma
 import { auth } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import ArrayField from '../components/ArrayField';
+import ProfileEdit from '../components/ProfileEdit';
 
 const Admin = () => {
   const [projects, setProjects] = useState([]);
@@ -60,6 +61,7 @@ const Admin = () => {
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [imageManagementOpen, setImageManagementOpen] = useState(false);
   const [currentImages, setCurrentImages] = useState([]);
+  const [activeSection, setActiveSection] = useState('projects');
 
   // Formulario inicial vacío
   const emptyForm = {
@@ -74,6 +76,10 @@ const Admin = () => {
     designProcess: '',
     awards: [],
     featured: false
+  };
+
+  const handleSectionChange = (section) => {
+    setActiveSection(section);
   };
 
   const [formData, setFormData] = useState(emptyForm);
@@ -441,35 +447,59 @@ const Admin = () => {
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
         <Typography variant="h4" component="h1">
-          Administración de Proyectos
+          {activeSection === 'projects' ? 'Administración de Proyectos' : 'Administración de Perfil'}
         </Typography>
         <Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddNew} sx={{ mr: 2 }}>
-            Nuevo Proyecto
+          {activeSection === 'projects' && (
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />} 
+              onClick={handleAddNew} 
+              sx={{ mr: 2 }}
+            >
+              Nuevo Proyecto
+            </Button>
+          )}
+          <Button 
+            variant={activeSection === 'profile' ? 'contained' : 'outlined'} 
+            onClick={() => handleSectionChange('profile')}
+            sx={{ mr: 2 }}
+          >
+            Editar Perfil
+          </Button>
+          <Button 
+            variant={activeSection === 'projects' ? 'contained' : 'outlined'} 
+            onClick={() => handleSectionChange('projects')}
+            sx={{ mr: 2 }}
+          >
+            Proyectos
           </Button>
           <Button variant="outlined" onClick={handleLogout}>
             Cerrar sesión
           </Button>
         </Box>
       </Box>
-      {loading && !formOpen && !deleteConfirmOpen ? (
-        <Typography align="center" sx={{ my: 4 }}>
-          Cargando proyectos...
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {projects.map(project => (
-            <Grid item xs={12} md={6} lg={4} key={project.id}>
+      {activeSection === 'projects' ? (
+        // Mostrar el contenido actual de proyectos
+        loading && !formOpen && !deleteConfirmOpen ? (
+          <Typography align="center" sx={{ my: 4 }}>
+            Cargando proyectos...
+          </Typography>
+        ) : (
+          <Grid container spacing={3}>
+            {/* Contenido actual de proyectos */}
+            {projects.map(project => (
+              <Grid item xs={12} md={6} lg={4} key={project.id}>
               <Paper
-                elevation={2}
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
-                  borderRadius: 2
-                }}
-              >
+                  elevation={2}
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    borderRadius: 2
+                  }}
+                >
                 <Box
                   sx={{
                     position: 'relative',
@@ -581,6 +611,9 @@ const Admin = () => {
             </Grid>
           ))}
         </Grid>
+        )
+      ) : (
+        <ProfileEdit />
       )}
       {/* Diálogo para añadir/editar proyecto */}
       <Dialog open={formOpen} onClose={() => !loading && setFormOpen(false)} fullWidth maxWidth="md" scroll="paper">

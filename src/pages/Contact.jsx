@@ -21,6 +21,8 @@ import {
   LinkedIn as LinkedInIcon,
   Language as LanguageIcon
 } from '@mui/icons-material';
+import { getProfile } from '../firebase/profileService';
+import { useEffect } from 'react';
 
 const Contact = () => {
   const [formValues, setFormValues] = useState({
@@ -50,6 +52,42 @@ const Contact = () => {
       });
     }
   };
+
+  const [contactData, setContactData] = useState({
+    email: 'aylinniglerre@gmail.com',
+    phone: '232 379 64 17',
+    location: 'Monterrey, Nuevo León',
+    social: {
+      instagram: 'https://www.instagram.com/itslynncarre/',
+      linkedin: 'https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/',
+      behance: 'https://behance.net'
+    }
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContactData = async () => {
+      try {
+        const data = await getProfile();
+        setContactData({
+          email: data.email || 'aylinniglerre@gmail.com',
+          phone: data.phone || '232 379 64 17',
+          location: data.location || 'Monterrey, Nuevo León',
+          social: {
+            instagram: data.social?.instagram || 'https://www.instagram.com/itslynncarre/',
+            linkedin: data.social?.linkedin || 'https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/',
+            behance: data.social?.behance || 'https://behance.net'
+          }
+        });
+      } catch (err) {
+        console.error("Error fetching contact data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchContactData();
+  }, []);
   
   const validate = () => {
     const errors = {};
@@ -133,21 +171,21 @@ const Contact = () => {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <EmailIcon sx={{ color: 'text.secondary', mr: 2 }} />
                 <Typography variant="body1">
-                  aylinniglerre@gmail.com
+                {contactData.email}
                 </Typography>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <PhoneIcon sx={{ color: 'text.secondary', mr: 2 }} />
                 <Typography variant="body1">
-                  232 379 64 17
+                {contactData.phone}
                 </Typography>
               </Box>
               
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <LocationIcon sx={{ color: 'text.secondary', mr: 2 }} />
                 <Typography variant="body1">
-                  Monterrey, Nuevo León
+                {contactData.location}
                 </Typography>
               </Box>
             </Stack>
@@ -157,13 +195,13 @@ const Contact = () => {
             </Typography>
             
             <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-              <Link href="https://www.instagram.com/itslynncarre/" target="_blank" rel="noopener noreferrer">
+              <Link href={contactData.social.instagram} target="_blank" rel="noopener noreferrer">
                 <InstagramIcon sx={{ color: 'text.primary', fontSize: 28 }} />
               </Link>
-              <Link href="https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/" target="_blank" rel="noopener noreferrer">
+              <Link href={contactData.social.linkedin} target="_blank" rel="noopener noreferrer">
                 <LinkedInIcon sx={{ color: 'text.primary', fontSize: 28 }} />
               </Link>
-              <Link href="https://behance.net" target="_blank" rel="noopener noreferrer">
+              <Link href={contactData.social.behance} target="_blank" rel="noopener noreferrer">
                 <LanguageIcon sx={{ color: 'text.primary', fontSize: 28 }} />
               </Link>
             </Stack>

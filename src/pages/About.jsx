@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   Container,
@@ -11,21 +11,69 @@ import {
   Stack,
   Chip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import profileImg from '../images/profile.jpg';
+import { getProfile } from '../firebase/profileService'; // Importar el servicio
 
 const About = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [profileData, setProfileData] = useState({
+    about: '',
+    vision: '',
+    approach: '',
+    interests: [],
+    activities: [],
+    experiences: []
+  });
+  
+  // Cargar datos del perfil desde Firebase
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const data = await getProfile();
+        setProfileData(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching profile data:", err);
+        setError("No se pudo cargar la información del perfil. Por favor, intenta de nuevo más tarde.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProfileData();
+  }, []);
+  
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Alert severity="error" sx={{ mb: 4 }}>{error}</Alert>
+      </Container>
+    );
+  }
   
   // Datos para la página Sobre Mí
   const aboutData = {
-    intro: "Soy Aylinn Carré, estudiante de sexto semestre de la Licenciatura en Diseño en el Tecnológico de Monterrey. Mi enfoque profesional se centra en el diseño industrial y visual, con particular interés en crear soluciones que mejoren la vida cotidiana de las personas.",
-    vision: "Mi visión como diseñadora es crear objetos y experiencias que no solo sean estéticamente atractivos, sino que también resuelvan problemas reales y aporten valor a la sociedad. Creo firmemente que el buen diseño puede transformar la forma en que interactuamos con nuestro entorno y entre nosotros.",
-    approach: "Mi enfoque de diseño se caracteriza por la atención meticulosa a los detalles, la búsqueda de soluciones innovadoras y una estética minimalista pero expresiva. Disfruto explorando la intersección entre la funcionalidad práctica y la belleza visual.",
-    experiences: [
+    intro: profileData.about || "Soy Aylinn Carré, estudiante de sexto semestre de la Licenciatura en Diseño en el Tecnológico de Monterrey. Mi enfoque profesional se centra en el diseño industrial y visual, con particular interés en crear soluciones que mejoren la vida cotidiana de las personas.",
+    vision: profileData.vision || "Mi visión como diseñadora es crear objetos y experiencias que no solo sean estéticamente atractivos, sino que también resuelvan problemas reales y aporten valor a la sociedad. Creo firmemente que el buen diseño puede transformar la forma en que interactuamos con nuestro entorno y entre nosotros.",
+    approach: profileData.approach || "Mi enfoque de diseño se caracteriza por la atención meticulosa a los detalles, la búsqueda de soluciones innovadoras y una estética minimalista pero expresiva. Disfruto explorando la intersección entre la funcionalidad práctica y la belleza visual.",
+    experiences: profileData.experiences || [
       {
         title: "Diseño Industrial",
         description: "He desarrollado varios proyectos de diseño de producto, desde floreros funcionales hasta utensilios de cocina inclusivos. Mi trabajo en este campo busca crear objetos útiles que también cuenten una historia a través de su forma y materiales."
@@ -39,7 +87,7 @@ const About = () => {
         description: "Como Directora de Arte en BLUA MEDIA y Set Dresser en producciones cinematográficas, he aprendido a visualizar y materializar conceptos abstractos, coordinando equipos creativos para lograr resultados de alta calidad visual."
       }
     ],
-    interests: [
+    interests: profileData.interests || [
       "Diseño sostenible",
       "Diseño inclusivo",
       "Innovación de productos",
@@ -47,7 +95,7 @@ const About = () => {
       "Dirección de arte",
       "Cultura visual contemporánea"
     ],
-    activities: [
+    activities: profileData.activities || [
       "Participación en talleres especializados de diseño",
       "Colaboración en proyectos interdisciplinarios",
       "Asistencia a ferias y exposiciones de diseño",

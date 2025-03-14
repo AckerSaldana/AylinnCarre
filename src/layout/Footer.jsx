@@ -15,11 +15,50 @@ import {
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import { getProfile } from '../firebase/profileService';
+import { useEffect, useState } from 'react';
 
 const Footer = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const currentYear = new Date().getFullYear();
+
+  const [contactData, setContactData] = useState({
+    name: 'Aylinn Carré',
+    email: 'correodeaylinnJAJAJ@gmail.com',
+    location: 'Monterrey, Nuevo León, México',
+    about: 'Estudiante de diseño en el Tecnológico de Monterrey, apasionada del arte y las industrias creativas.',
+    social: {
+      instagram: 'https://www.instagram.com/itslynncarre/',
+      linkedin: 'https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/'
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  
+  // Cargar datos del perfil
+  useEffect(() => {
+    const fetchContactData = async () => {
+      try {
+        const data = await getProfile();
+        setContactData({
+          name: data.name || 'Aylinn Carré',
+          email: data.email || 'correodeaylinnJAJAJ@gmail.com',
+          location: data.location || 'Monterrey, Nuevo León, México',
+          about: data.about || 'Estudiante de diseño en el Tecnológico de Monterrey, apasionada del arte y las industrias creativas.',
+          social: {
+            instagram: data.social?.instagram || 'https://www.instagram.com/itslynncarre/',
+            linkedin: data.social?.linkedin || 'https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/'
+          }
+        });
+      } catch (err) {
+        console.error("Error fetching contact data for footer:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchContactData();
+  }, []);
   
   return (
     <Box
@@ -44,7 +83,7 @@ const Footer = () => {
                 fontSize: '1.5rem'
               }}
             >
-              Aylinn Carré
+              {contactData.name}
             </Typography>
             
             <Typography 
@@ -58,8 +97,7 @@ const Footer = () => {
                 fontFamily: '"Open Sauce", sans-serif'
               }}
             >
-              Estudiante de diseño en el Tecnológico de Monterrey, 
-              apasionada del arte y las industrias creativas.
+              {contactData.about}
             </Typography>
             
             <Box sx={{ mb: 4 }}>
@@ -75,7 +113,7 @@ const Footer = () => {
                   }}
                 >
                   <EmailOutlinedIcon sx={{ fontSize: 20 }} />
-                  correodeaylinnJAJAJ@gmail.com
+                  {contactData.email}
                 </Typography>
                 
                 <Typography 
@@ -85,7 +123,7 @@ const Footer = () => {
                     fontFamily: '"Open Sauce", sans-serif'
                   }}
                 >
-                  Monterrey, Nuevo León, México
+                  {contactData.location}
                 </Typography>
               </Stack>
             </Box>
@@ -105,7 +143,7 @@ const Footer = () => {
                   }
                 }}
                 component="a"
-                href="https://www.instagram.com/itslynncarre/"
+                href={contactData.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -126,7 +164,7 @@ const Footer = () => {
                   }
                 }}
                 component="a"
-                href="https://www.linkedin.com/in/aylinn-iglesias-carré-244b20340/"
+                href={contactData.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
               >

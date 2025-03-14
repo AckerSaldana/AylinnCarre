@@ -26,6 +26,8 @@ import {
 import { useProjects } from '../context/ProjectContext';
 import LazyImage from '../components/LazyImage';
 import profileImg from '../images/profile.jpg';
+import { getProfile } from '../firebase/profileService'; 
+
 
 <Box
   component="img"
@@ -46,6 +48,46 @@ const Home = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredProjects, setFilteredProjects] = useState([]);
+
+  const [profileData, setProfileData] = useState({
+    name: 'Aylinn Carré',
+    title: 'Estudiante de Diseño',
+    about: 'Estudiante de sexto semestre de Diseño, apasionada del arte y las industrias creativas.',
+    email: 'aylinniglerre@gmail.com',
+    phone: '232 379 64 17',
+    location: 'Monterrey, Nuevo León'
+  });
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Modifica la parte del useEffect en Home.jsx
+useEffect(() => {
+  const fetchProfileData = async () => {
+    try {
+      // Usar valores predeterminados por si falla
+      const defaultProfile = {
+        name: 'Aylinn Carré',
+        title: 'Estudiante de Diseño',
+        about: 'Estudiante de Diseño en el Tecnológico de Monterrey',
+        email: 'aylinniglerre@gmail.com',
+        phone: '232 379 64 17',
+        location: 'Monterrey, Nuevo León'
+      };
+      
+      try {
+        const data = await getProfile();
+        setProfileData(data);
+        
+      } catch (err) {
+        
+        setProfileData(defaultProfile);
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+  
+  fetchProfileData();
+}, []);
   
   // Usar el contexto de proyectos
   const { 
@@ -55,10 +97,19 @@ const Home = () => {
     filterProjectsByCategory 
   } = useProjects();
   
-  // Actualizar proyectos filtrados cuando cambia la categoría
   useEffect(() => {
-    setFilteredProjects(filterProjectsByCategory(selectedCategory));
+    const filtered = filterProjectsByCategory(selectedCategory);
+    
+    const sortedProjects = [...filtered].sort((a, b) => {
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      return 0;
+    });
+    
+    setFilteredProjects(sortedProjects);
   }, [selectedCategory, filterProjectsByCategory]);
+  
+  
   
   // Categorías de proyectos (si no se cargaron del contexto)
   const defaultCategories = [
@@ -153,7 +204,7 @@ const Home = () => {
                     lineHeight: 1.2
                   }}
                 >
-                  Aylinn Carré
+                  {profileData.name}
                 </Typography>
                 <Typography
                   variant="h5"
@@ -166,7 +217,7 @@ const Home = () => {
                     letterSpacing: '0.02em'
                   }}
                 >
-                  Portafolio de diseño
+                  {profileData.title}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -179,8 +230,7 @@ const Home = () => {
                     mb: 5
                   }}
                 >
-                  Estudiante de sexto semestre de Diseño, apasionada del arte y las industrias creativas.
-                  Con experiencia en diseño industrial, dirección de arte y diseño visual.
+                  {profileData.about}
                 </Typography>
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
@@ -250,7 +300,7 @@ const Home = () => {
                       fontFamily: '"Open Sauce", sans-serif'
                     }}
                   >
-                    aylinniglerre@gmail.com
+                    {profileData.email}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -263,7 +313,7 @@ const Home = () => {
                       fontFamily: '"Open Sauce", sans-serif'
                     }}
                   >
-                    232 379 64 17
+                    {profileData.phone}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -276,7 +326,7 @@ const Home = () => {
                       fontFamily: '"Open Sauce", sans-serif'
                     }}
                   >
-                    Monterrey, Nuevo León
+                    {profileData.location}
                   </Typography>
                 </Box>
               </Box>
@@ -403,21 +453,43 @@ const Home = () => {
                           borderRadius: 0,
                           boxShadow: 'none',
                           border: '1px solid',
-                          borderColor: 'divider',
+                          borderColor: project.featured ? 'primary.main' : 'divider', 
                           transition: 'all 0.4s ease',
                           overflow: 'hidden',
-                         '&:hover': {
-                              transform: 'translateY(-8px)',
-                              boxShadow: '0 20px 30px rgba(0,0,0,0.1)',
-                              '& .project-image': {
-                                transform: 'scale(1.05)'
-                              }
+                          position: 'relative', 
+                          '&:hover': {
+                            transform: 'translateY(-8px)',
+                            boxShadow: '0 20px 30px rgba(0,0,0,0.1)',
+                            '& .project-image': {
+                              transform: 'scale(1.05)'
                             }
+                          }
                         }}
                         component={RouterLink}
                         to={`/project/${project.id}`}
                         style={{ textDecoration: 'none' }}
                       >
+                        {/* Badge para proyectos destacados */}
+                        {project.featured && (
+                          <Box 
+                            sx={{ 
+                              position: 'absolute', 
+                              top: 0, 
+                              right: 0, 
+                              bgcolor: 'black', 
+                              color: 'white', 
+                              px: 2, 
+                              py: 0.5, 
+                              zIndex: 1,
+                              fontFamily: '"Open Sauce", sans-serif',
+                              fontSize: '0.75rem',
+                              fontWeight: 500
+                            }}
+                          >
+                            Destacado
+                          </Box>
+                        )}
+
                         <Box sx={{ 
                           position: 'relative',
                           paddingTop: '75%',

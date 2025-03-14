@@ -17,6 +17,7 @@
     "@mui/material": "^6.4.7",
     "@mui/styled-engine-sc": "^6.4.6",
     "firebase": "^11.4.0",
+    "firebase-admin": "^13.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
@@ -33,5 +34,18 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "vite": "^6.2.0"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AckerSaldana/AylinnCarre.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AckerSaldana/AylinnCarre/issues"
+  },
+  "homepage": "https://github.com/AckerSaldana/AylinnCarre#readme"
 }

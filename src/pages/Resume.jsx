@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -16,7 +16,9 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
-  LinearProgress
+  LinearProgress,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import {
   School as SchoolIcon,
@@ -31,29 +33,68 @@ import {
   Phone as PhoneIcon
 } from '@mui/icons-material';
 import profileImg from '../images/profile.jpg';
+import { getProfile } from '../firebase/profileService'; // Importar el servicio
 
 const Resume = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [profileData, setProfileData] = useState({});
   
-  // Datos del CV basados en el PDF
+  // Cargar datos del perfil desde Firebase
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const data = await getProfile();
+        setProfileData(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching profile data:", err);
+        setError("No se pudo cargar la información del CV. Por favor, intenta de nuevo más tarde.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProfileData();
+  }, []);
+  
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Alert severity="error" sx={{ mb: 4 }}>{error}</Alert>
+      </Container>
+    );
+  }
+  
+  // Datos del CV basados en Firebase o valores predeterminados
   const cvData = {
     personal: {
-      name: 'Aylinn Carré',
-      title: 'Estudiante de Diseño',
-      location: 'Monterrey, Nuevo León',
-      email: 'aylinniglerre@gmail.com',
-      phone: '232 379 64 17',
-      about: 'Estudiante de sexto semestre de Diseño, apasionada del arte y las industrias creativas.'
+      name: profileData.name || 'Aylinn Carré',
+      title: profileData.title || 'Estudiante de Diseño',
+      location: profileData.location || 'Monterrey, Nuevo León',
+      email: profileData.email || 'aylinniglerre@gmail.com',
+      phone: profileData.phone || '232 379 64 17',
+      about: profileData.about || 'Estudiante de sexto semestre de Diseño, apasionada del arte y las industrias creativas.'
     },
-    education: [
+    education: profileData.education || [
       {
         title: 'Lic. en Diseño',
         institution: 'Tecnológico de Monterrey',
         period: '2022 - Actualidad'
       }
     ],
-    experience: [
+    experience: profileData.experience || [
       {
         title: 'On Campus Intern',
         company: 'Departamento de Comunicación',
@@ -91,7 +132,7 @@ const Resume = () => {
         period: 'Agosto - Diciembre 2022'
       }
     ],
-    skills: [
+    skills: profileData.skills || [
       { name: 'Liderazgo', level: 95 },
       { name: 'Creatividad', level: 98 },
       { name: 'Adaptabilidad', level: 90 },
@@ -99,7 +140,7 @@ const Resume = () => {
       { name: 'Atención a los detalles', level: 92 },
       { name: 'Perseverancia', level: 88 }
     ],
-    software: [
+    software: profileData.software || [
       { name: 'Photoshop', level: 90 },
       { name: 'Illustrator', level: 95 },
       { name: 'Lightroom', level: 85 },
@@ -109,7 +150,7 @@ const Resume = () => {
       { name: 'SketchUp', level: 85 },
       { name: 'KeyShot', level: 78 }
     ],
-    languages: [
+    languages: profileData.languages || [
       {
         language: 'Español',
         level: 'Nativo',

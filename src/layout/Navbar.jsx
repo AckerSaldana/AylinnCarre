@@ -68,7 +68,6 @@ const Navbar = () => {
 
   const pages = [
     { name: 'Inicio', path: '/' },
-    { name: 'Proyectos', path: '/projects' },
     { name: 'Sobre mí', path: '/about' },
     { name: 'CV', path: '/resume' },
     { name: 'Contacto', path: '/contact' }

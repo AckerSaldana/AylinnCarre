@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -11,122 +11,64 @@ import {
   Breadcrumbs,
   Link,
   Divider,
-  Paper
+  Paper,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { getProjectById, getProjects } from '../firebase/projectService';
+import LazyImage from '../components/LazyImage';
 
 const ProjectDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [nextProject, setNextProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   useEffect(() => {
-    // Simulando una llamada a API
-    const fetchProjectData = () => {
-      setLoading(true);
-      
-      // Datos de ejemplo, en una app real esto vendría de una API
-      const projectsData = [
-        {
-          id: 1,
-          title: 'Bouquet',
-          category: 'diseño industrial',
-          year: '2024',
-          mentors: ['Henry Julier', 'Jorge Diego Etienne'],
-          materials: ['Lámina de acero', 'Pintura'],
-          description: 'Florero inspirado en la forma de un ramo de flores. El concepto surge de la complicada acción de cambiar el agua de un florero durante el paso de los días.',
-          challenge: 'Diseñar un objeto que integre las necesidades básicas de las plantas con los elementos estéticos y funcionales de la vida cotidiana.',
-          solution: 'Consta de dos partes removibles que pueden ser separadas para cambiar el agua con facilidad. Mientras que la parte superior puede ser puesta sobre la mesa a la vez que sostiene cuidadosamente las flores, la parte inferior es llenada con agua para mantener las flores con vida.',
-          designProcess: 'El ejercicio planteado consistía en la introspección de la relación personal con las plantas para el diseño y conceptualización de objetos como macetas, floreros o soportes para plantas.',
-          awards: ['Exhibido en Wanted Design', 'Feria Internacional del Mueble Contemporáneo (ICFF)', 'Exhibición de los 25 años del Tec de Monterrey en Museo MARCO'],
-          images: [
-            '/src/images/bouquet.jpg',
-            '/src/images/bouquet-1.jpg',
-            '/src/images/bouquet-2.jpg',
-            '/src/images/bouquet-3.jpg'
-          ],
-          color: '#646cff'
-        },
-        {
-          id: 2,
-          title: 'Peque-biz',
-          category: 'diseño industrial',
-          year: '2025',
-          mentors: ['José de la O'],
-          materials: ['Madera de abeto', 'Varilla de acero'],
-          description: 'Familia de productos de cocina desarrollados para niños que padecen discapacidad visual y que busca introducirlos, por medio de sus formas, de una manera más fácil y sencilla a actividades "comunes", como lo puede ser el cocinar.',
-          challenge: 'Responder a la poca disponibilidad de productos de cocina desarrollados para personas con discapacidad visual.',
-          solution: 'Serie de utensilios con formas inspiradas en la biznaga, que facilitan el desarrollo de las habilidades motrices y generan cierto grado de independencia.',
-          designProcess: 'La metáfora que inspiró este proyecto es la biznaga de yeso, una variante de la planta endémica del norte de México que recientemente se encontró en peligro de extinción.',
-          awards: ['Seleccionado para exhibición en Milano Design Week y Salone Satellite 2025'],
-          images: [
-            '/src/images/peque-biz.jpg',
-            '/src/images/peque-biz-2.jpg',
-            '/src/images/peque-biz-3.jpg'
-          ],
-          color: '#90EE90'
-        },
-        {
-          id: 3,
-          title: 'Bettercepillo limpiador',
-          category: 'diseño industrial',
-          year: '2024',
-          mentors: ['Betterware Design Lab'],
-          materials: ['Polipropileno', 'TPR', 'Nylon'],
-          description: 'Complemento para el fregadero con multifunción, que puede ser utilizado para lavar trastes, e incluso el fregadero, con su cabeza de limpieza, y su vez despegar la comida de los mismos al tallarlos con su espátula.',
-          challenge: 'Identificar aquellos problemas o "dolores de cabeza" que toman lugar al momento de lavar los trastes.',
-          solution: 'Producto 2 en 1 que ayuda a solucionar de manera práctica una problemática recurrente en muchos hogares.',
-          designProcess: 'Después de un proceso de investigación, se hicieron notar dos de los problemas más comunes: el fregadero queda sucio después de lavar los trastes, así como también es difícil despegar la comida de los mismos al lavarlos.',
-          awards: ['Diseño destacado del Reto Betterware Design Lab 2024'],
-          images: [
-            '/src/images/bettercepillo-1.jpg',
-            '/src/images/bettercepillo-2.jpg'
-          ],
-          color: '#4682B4'
-        },
-        {
-          id: 4,
-          title: 'Bonaterra',
-          category: 'diseño industrial',
-          year: '2023',
-          mentors: ['Emiliano Godoy'],
-          materials: ['MDF laminado', 'Cubrecantos'],
-          description: 'Familia de mobiliario que busca adaptarse a lugares en donde el espacio sea reducido o simplemente se quiera agregar muebles compactos pero eficientes.',
-          challenge: 'Satisfacer las necesidades de estudiantes que requieran de espacios de concentración y estudio personal.',
-          solution: 'Mobiliario con formas y colores cómodas a la vista que aprovecha al máximo el espacio.',
-          designProcess: 'El concepto surge a partir de idea de satisfacer las necesidades de nuestro público objetivo, los cuales son estudiantes que requieran de espacios de concentración y estudio personal.',
-          awards: [],
-          images: [
-            '/src/images/bonaterra-1.jpg',
-            '/src/images/bonaterra-2.jpg'
-          ],
-          color: '#8BC34A'
-        }
-      ];
-      
-      // Encontrar el proyecto actual
-      const projectData = projectsData.find(p => p.id === parseInt(id));
-      
-      // Encontrar el siguiente proyecto para navegación
-      const currentIndex = projectsData.findIndex(p => p.id === parseInt(id));
-      const nextIndex = (currentIndex + 1) % projectsData.length;
-      const nextProjectData = projectsData[nextIndex];
-      
-      // Simular tiempo de carga
-      setTimeout(() => {
-        if (projectData) {
-          setProject(projectData);
-          setNextProject(nextProjectData);
-        }
-        setLoading(false);
-      }, 800);
-    };
+    // Resetear estado al cambiar el ID
+    setProject(null);
+    setLoading(true);
+    setError(null);
     
+    // Cargar los datos del proyecto
     fetchProjectData();
   }, [id]);
+  
+  const fetchProjectData = async () => {
+    try {
+      // Cargar proyecto actual
+      const projectData = await getProjectById(id);
+      
+      if (!projectData) {
+        setError("Proyecto no encontrado");
+        setLoading(false);
+        return;
+      }
+      
+      setProject(projectData);
+      
+      // Cargar todos los proyectos para determinar el siguiente
+      const allProjects = await getProjects();
+      
+      if (allProjects.length > 1) {
+        const currentIndex = allProjects.findIndex(p => p.id === id);
+        const nextIndex = (currentIndex + 1) % allProjects.length;
+        setNextProject(allProjects[nextIndex]);
+      }
+      
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching project: ", err);
+      setError("Hubo un problema al cargar el proyecto. Por favor, intenta de nuevo más tarde.");
+    } finally {
+      setLoading(false);
+    }
+  };
   
   if (loading) {
     return (
@@ -149,9 +91,12 @@ const ProjectDetail = () => {
     );
   }
   
-  if (!project) {
+  if (error || !project) {
     return (
       <Container maxWidth="lg" sx={{ pt: 12, pb: 8, textAlign: 'center' }}>
+        <Alert severity="error" sx={{ mb: 4 }}>
+          {error || "Proyecto no encontrado"}
+        </Alert>
         <Typography variant="h4" component="h1" gutterBottom>
           Proyecto no encontrado
         </Typography>
@@ -218,8 +163,8 @@ const ProjectDetail = () => {
             component="h1"
             gutterBottom
             sx={{
-              fontFamily: "'Playfair Display', serif",
-              fontWeight: 700,
+              fontFamily: '"DM Serif Display", serif',
+              fontWeight: 400,
               fontSize: { xs: '2.5rem', md: '3.5rem' }
             }}
           >
@@ -257,9 +202,11 @@ const ProjectDetail = () => {
         <Grid container spacing={6}>
           {/* Left column - Main image and details */}
           <Grid item xs={12} md={8}>
-            <Box
-              component="img"
-              src={project.images[0]}
+            <LazyImage
+              src={project.images && project.images.length > 0 
+                ? project.images[0] 
+                : '/placeholder-image.jpg'
+              }
               alt={project.title}
               sx={{
                 width: '100%',
@@ -276,7 +223,7 @@ const ProjectDetail = () => {
               component="h2"
               gutterBottom
               sx={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: '"DM Serif Display", serif',
                 position: 'relative',
                 pb: 2,
                 mb: 3,
@@ -294,7 +241,7 @@ const ProjectDetail = () => {
               El Desafío
             </Typography>
             <Typography variant="body1" paragraph>
-              {project.challenge}
+              {project.challenge || "No hay información disponible sobre el desafío de este proyecto."}
             </Typography>
             
             <Typography
@@ -302,7 +249,7 @@ const ProjectDetail = () => {
               component="h2"
               gutterBottom
               sx={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: '"DM Serif Display", serif',
                 position: 'relative',
                 pb: 2,
                 mb: 3,
@@ -321,7 +268,7 @@ const ProjectDetail = () => {
               El Proceso
             </Typography>
             <Typography variant="body1" paragraph>
-              {project.designProcess}
+              {project.designProcess || "No hay información disponible sobre el proceso de diseño de este proyecto."}
             </Typography>
             
             <Typography
@@ -329,7 +276,7 @@ const ProjectDetail = () => {
               component="h2"
               gutterBottom
               sx={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: '"DM Serif Display", serif',
                 position: 'relative',
                 pb: 2,
                 mb: 3,
@@ -348,50 +295,55 @@ const ProjectDetail = () => {
               La Solución
             </Typography>
             <Typography variant="body1" paragraph>
-              {project.solution}
+              {project.solution || "No hay información disponible sobre la solución de este proyecto."}
             </Typography>
             
             {/* Gallery */}
-            <Typography
-              variant="h5"
-              component="h2"
-              gutterBottom
-              sx={{
-                fontFamily: "'Playfair Display', serif",
-                position: 'relative',
-                pb: 2,
-                mb: 3,
-                mt: 6,
-                '&:after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  width: 60,
-                  height: 2,
-                  bgcolor: 'text.primary'
-                }
-              }}
-            >
-              Galería
-            </Typography>
-            
-            <Grid container spacing={2}>
-              {project.images.slice(1).map((image, index) => (
-                <Grid item xs={12} sm={6} key={index}>
-                  <Box
-                    component="img"
-                    src={image}
-                    alt={`${project.title} - Imagen ${index + 2}`}
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      boxShadow: 2
-                    }}
-                  />
+            {project.images && project.images.length > 1 && (
+              <>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  gutterBottom
+                  sx={{
+                    fontFamily: '"DM Serif Display", serif',
+                    position: 'relative',
+                    pb: 2,
+                    mb: 3,
+                    mt: 6,
+                    '&:after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      width: 60,
+                      height: 2,
+                      bgcolor: 'text.primary'
+                    }
+                  }}
+                >
+                  Galería
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  {project.images.slice(1).map((image, index) => (
+                    <Grid item xs={12} sm={6} key={index}>
+                      <LazyImage
+                        src={image}
+                        alt={`${project.title} - Imagen ${index + 2}`}
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          aspectRatio: '4/3',
+                          objectFit: 'cover',
+                          boxShadow: 2
+                        }}
+                      />
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
+              </>
+            )}
           </Grid>
           
           {/* Right column - Project info */}
@@ -401,7 +353,7 @@ const ProjectDetail = () => {
                 variant="h6"
                 gutterBottom
                 sx={{
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: '"DM Serif Display", serif',
                   pb: 2,
                   borderBottom: '1px solid',
                   borderColor: 'divider',
@@ -429,25 +381,29 @@ const ProjectDetail = () => {
                 </Typography>
               </Box>
               
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Mentores
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  {project.mentors.join(', ')}
-                </Typography>
-              </Box>
+              {project.mentors && project.mentors.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Mentores
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {project.mentors.join(', ')}
+                  </Typography>
+                </Box>
+              )}
               
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Materiales
-                </Typography>
-                <Typography variant="body2" color="text.secondary" paragraph>
-                  {project.materials.join(', ')}
-                </Typography>
-              </Box>
+              {project.materials && project.materials.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Materiales
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" paragraph>
+                    {project.materials.join(', ')}
+                  </Typography>
+                </Box>
+              )}
               
-              {project.awards.length > 0 && (
+              {project.awards && project.awards.length > 0 && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Reconocimientos
@@ -465,7 +421,7 @@ const ProjectDetail = () => {
             
             {/* Contacto CTAs */}
             <Paper elevation={0} sx={{ p: 3, bgcolor: 'text.primary', color: 'background.paper', mb: 4 }}>
-              <Typography variant="h6" gutterBottom fontFamily="'Playfair Display', serif">
+              <Typography variant="h6" gutterBottom fontFamily="'DM Serif Display', serif">
                 ¿Te interesa mi trabajo?
               </Typography>
               <Typography variant="body2" paragraph>
@@ -493,42 +449,46 @@ const ProjectDetail = () => {
         </Grid>
         
         {/* Project navigation */}
-        <Divider sx={{ my: 6 }} />
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexDirection: { xs: 'column', sm: 'row' },
-            gap: 2
-          }}
-        >
-          <Button
-            component={RouterLink}
-            to="/"
-            startIcon={<ArrowBackIcon />}
-            sx={{ color: 'text.primary' }}
-          >
-            Todos los proyectos
-          </Button>
-          
-          <Button
-            component={RouterLink}
-            to={`/project/${nextProject.id}`}
-            endIcon={<ArrowForwardIcon />}
-            variant="outlined"
-            sx={{
-              borderColor: 'text.primary',
-              color: 'text.primary',
-              '&:hover': {
-                bgcolor: 'text.primary',
-                color: 'background.paper'
-              }
-            }}
-          >
-            Siguiente proyecto: {nextProject.title}
-          </Button>
-        </Box>
+        {nextProject && (
+          <>
+            <Divider sx={{ my: 6 }} />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2
+              }}
+            >
+              <Button
+                component={RouterLink}
+                to="/"
+                startIcon={<ArrowBackIcon />}
+                sx={{ color: 'text.primary' }}
+              >
+                Todos los proyectos
+              </Button>
+              
+              <Button
+                component={RouterLink}
+                to={`/project/${nextProject.id}`}
+                endIcon={<ArrowForwardIcon />}
+                variant="outlined"
+                sx={{
+                  borderColor: 'text.primary',
+                  color: 'text.primary',
+                  '&:hover': {
+                    bgcolor: 'text.primary',
+                    color: 'background.paper'
+                  }
+                }}
+              >
+                Siguiente proyecto: {nextProject.title}
+              </Button>
+            </Box>
+          </>
+        )}
       </Container>
     </Box>
   );

@@ -4,13 +4,13 @@ import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "tu-api-key",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "tu-message-sender-id",
-  appId: "tu-app-id",
-  measurementId: "tu-measurement-id"
+  apiKey: "AIzaSyBphcLlGQTOo0I6i2luoYb2ddbbEGAN4tw",
+  authDomain: "aylinncarre.firebaseapp.com",
+  projectId: "aylinncarre",
+  storageBucket: "aylinncarre.firebasestorage.app",
+  messagingSenderId: "554327896193",
+  appId: "1:554327896193:web:122f3231ff496cf6db5d80",
+  measurementId: "G-X893NWEW0P"
 };
 
 // Inicializar Firebase

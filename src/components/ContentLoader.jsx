@@ -1,7 +1,7 @@
 // src/components/ContentLoader.jsx
 // Componente para manejar la carga de contenido con diferentes estilos
 import React from 'react';
-import { Box, CircularProgress, Typography, Fade, Skeleton } from '@mui/material';
+import { Box, CircularProgress, Typography, Fade, Skeleton, Grid } from '@mui/material';
 
 const ContentLoader = ({ message = "Cargando...", fullPage = false, type = "spinner" }) => {
   // Para el tipo spinner, mostramos el CircularProgress clásico

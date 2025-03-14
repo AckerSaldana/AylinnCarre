@@ -20,6 +20,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { getProjectById, getProjects } from '../firebase/projectService';
 import LazyImage from '../components/LazyImage';
+import ContentLoader, { ProjectDetailSkeleton } from '../components/ContentLoader';
 
 const ProjectDetail = () => {
   const { id } = useParams();

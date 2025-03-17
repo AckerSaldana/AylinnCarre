@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Box, 
-  Button, 
-  TextField, 
-  Grid, 
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  TextField,
+  Grid,
   Paper,
   FormControl,
   InputLabel,
@@ -30,9 +30,9 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import { 
-  Add as AddIcon, 
-  Delete as DeleteIcon, 
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
   Edit as EditIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
@@ -78,11 +78,11 @@ const Admin = () => {
     featured: false
   };
 
+  const [formData, setFormData] = useState(emptyForm);
+
   const handleSectionChange = (section) => {
     setActiveSection(section);
   };
-
-  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
@@ -197,7 +197,7 @@ const Admin = () => {
     setFormOpen(true);
   };
 
-  // Confirmar eliminación de proyecto
+  // Confirmar eliminación de proyecto (se abre el diálogo)
   const confirmDelete = (project) => {
     setProjectToDelete(project);
     setDeleteConfirmOpen(true);
@@ -205,21 +205,26 @@ const Admin = () => {
 
   // Eliminar proyecto
   const handleDelete = async () => {
-    if (!projectToDelete) return;
+    if (!projectToDelete || !projectToDelete.id) {
+      console.error("No hay proyecto para eliminar o ID inválido");
+      return;
+    }
     try {
       setLoading(true);
-      await deleteProject(projectToDelete.id);
-      setProjects(projects.filter(p => p.id !== projectToDelete.id));
+      console.log("Intentando eliminar proyecto con ID:", projectToDelete.id);
+      const deletedId = await deleteProject(projectToDelete.id);
+      console.log("Proyecto eliminado con ID:", deletedId);
+      setProjects(projects.filter(p => p.id !== deletedId));
       setSnackbar({
         open: true,
         message: 'Proyecto eliminado correctamente',
         severity: 'success'
       });
     } catch (error) {
-      console.error("Error deleting project: ", error);
+      console.error("Error al eliminar el proyecto:", error);
       setSnackbar({
         open: true,
-        message: 'Error al eliminar el proyecto',
+        message: `Error al eliminar el proyecto: ${error.message || 'Error desconocido'}`,
         severity: 'error'
       });
     } finally {
@@ -305,26 +310,16 @@ const Admin = () => {
   };
 
   const setAsPrimaryImage = (index) => {
-    if (index === 0) return; // No hacer nada si ya es la principal
-    
-    // Crear una copia profunda del array de imágenes actuales
+    if (index === 0) return;
     const newImages = [...currentImages];
-    
-    // Mover la imagen seleccionada a la primera posición
     const primaryImage = newImages[index];
     newImages.splice(index, 1);
     newImages.unshift(primaryImage);
-    
-    // Actualizar el estado de las imágenes actuales
     setCurrentImages(newImages);
-    
-    // Actualizar también el formData con las nuevas imágenes
     setFormData(prevData => ({
       ...prevData,
       images: newImages
     }));
-    
-    // Mostrar una notificación al usuario
     setSnackbar({
       open: true,
       message: 'Imagen establecida como principal',
@@ -334,12 +329,10 @@ const Admin = () => {
 
   // Cerrar diálogo de gestión de imágenes y aplicar cambios
   const handleImageManagementClose = () => {
-    // Asegurarse de guardar los cambios al cerrar el diálogo
     setFormData(prevData => ({
       ...prevData,
       images: currentImages
     }));
-    
     setImageManagementOpen(false);
   };
 
@@ -348,14 +341,10 @@ const Admin = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      
-      // Crear el objeto que se enviará a Firebase
       const submitData = {
         ...formData,
-        // Asegurarse de usar el array de imágenes actual
         images: currentImages
       };
-      
       if (editingProject) {
         const updated = await updateProject(editingProject, submitData, imageFiles);
         setProjects(projects.map(p => p.id === editingProject ? updated : p));
@@ -379,17 +368,17 @@ const Admin = () => {
       setCurrentImages([]);
       setFormOpen(false);
       setEditingProject(null);
-  } catch (error) {
-    console.error("Error saving project: ", error);
-    setSnackbar({
-      open: true,
-      message: 'Error al guardar el proyecto: ' + error.message,
-      severity: 'error'
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      console.error("Error saving project: ", error);
+      setSnackbar({
+        open: true,
+        message: 'Error al guardar el proyecto: ' + error.message,
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!authenticated) {
     return (
@@ -451,24 +440,19 @@ const Admin = () => {
         </Typography>
         <Box>
           {activeSection === 'projects' && (
-            <Button 
-              variant="contained" 
-              startIcon={<AddIcon />} 
-              onClick={handleAddNew} 
-              sx={{ mr: 2 }}
-            >
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddNew} sx={{ mr: 2 }}>
               Nuevo Proyecto
             </Button>
           )}
-          <Button 
-            variant={activeSection === 'profile' ? 'contained' : 'outlined'} 
+          <Button
+            variant={activeSection === 'profile' ? 'contained' : 'outlined'}
             onClick={() => handleSectionChange('profile')}
             sx={{ mr: 2 }}
           >
             Editar Perfil
           </Button>
-          <Button 
-            variant={activeSection === 'projects' ? 'contained' : 'outlined'} 
+          <Button
+            variant={activeSection === 'projects' ? 'contained' : 'outlined'}
             onClick={() => handleSectionChange('projects')}
             sx={{ mr: 2 }}
           >
@@ -480,17 +464,15 @@ const Admin = () => {
         </Box>
       </Box>
       {activeSection === 'projects' ? (
-        // Mostrar el contenido actual de proyectos
         loading && !formOpen && !deleteConfirmOpen ? (
           <Typography align="center" sx={{ my: 4 }}>
             Cargando proyectos...
           </Typography>
         ) : (
           <Grid container spacing={3}>
-            {/* Contenido actual de proyectos */}
             {projects.map(project => (
               <Grid item xs={12} md={6} lg={4} key={project.id}>
-              <Paper
+                <Paper
                   elevation={2}
                   sx={{
                     height: '100%',
@@ -500,122 +482,117 @@ const Admin = () => {
                     borderRadius: 2
                   }}
                 >
-                <Box
-                  sx={{
-                    position: 'relative',
-                    height: 200,
-                    overflow: 'hidden',
-                    backgroundColor: '#f5f5f5'
-                  }}
-                >
-                  {project.featured && (
-                    <Chip
-                      icon={<StarIcon fontSize="small" />}
-                      label="Destacado"
-                      color="primary"
-                      size="small"
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        zIndex: 1
-                      }}
-                    />
-                  )}
-                  {project.images && project.images.length > 0 ? (
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={project.images[0]}
-                      alt={project.title}
-                      sx={{
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease-in-out',
-                        '&:hover': {
-                          transform: 'scale(1.05)'
-                        }
-                      }}
-                    />
-                  ) : (
-                    <Paper
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: '#eee'
-                      }}
-                    >
-                      <ImageIcon sx={{ fontSize: 60, color: '#bbb' }} />
-                    </Paper>
-                  )}
-                </Box>
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {project.title}
-                  </Typography>
-                  <Box sx={{ display: 'flex', mb: 2 }}>
-                    <Chip
-                      label={project.category}
-                      size="small"
-                      sx={{ mr: 1 }}
-                      color="secondary"
-                      variant="outlined"
-                    />
-                    <Chip label={project.year} size="small" variant="outlined" />
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
+                  <Box
                     sx={{
+                      position: 'relative',
+                      height: 200,
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      mb: 2
+                      backgroundColor: '#f5f5f5'
                     }}
                   >
-                    {project.description}
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    {project.images && (
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        Imágenes: {project.images.length}
-                      </Typography>
+                    {project.featured && (
+                      <Chip
+                        icon={<StarIcon fontSize="small" />}
+                        label="Destacado"
+                        color="primary"
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          left: 8,
+                          zIndex: 1
+                        }}
+                      />
+                    )}
+                    {project.images && project.images.length > 0 ? (
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={project.images[0]}
+                        alt={project.title}
+                        sx={{
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.05)'
+                          }
+                        }}
+                      />
+                    ) : (
+                      <Paper
+                        sx={{
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: '#eee'
+                        }}
+                      >
+                        <ImageIcon sx={{ fontSize: 60, color: '#bbb' }} />
+                      </Paper>
                     )}
                   </Box>
-                </CardContent>
-                <Divider />
-                <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
-                  <Button
-                    startIcon={<EditIcon />}
-                    onClick={() => handleEdit(project)}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    startIcon={<DeleteIcon />}
-                    color="error"
-                    onClick={() => confirmDelete(project)}
-                    size="small"
-                    variant="outlined"
-                  >
-                    Eliminar
-                  </Button>
-                </CardActions>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                      {project.title}
+                    </Typography>
+                    <Box sx={{ display: 'flex', mb: 2 }}>
+                      <Chip label={project.category} size="small" sx={{ mr: 1 }} color="secondary" variant="outlined" />
+                      <Chip label={project.year} size="small" variant="outlined" />
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        mb: 2
+                      }}
+                    >
+                      {project.description}
+                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                      {project.images && (
+                        <Typography variant="caption" display="block" color="text.secondary">
+                          Imágenes: {project.images.length}
+                        </Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                  <Divider />
+                  <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
+                    <Button
+                      startIcon={<EditIcon />}
+                      onClick={() => handleEdit(project)}
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      startIcon={<DeleteIcon />}
+                      color="error"
+                      onClick={() => confirmDelete(project)}
+                      size="small"
+                      variant="outlined"
+                    >
+                      Eliminar
+                    </Button>
+                  </CardActions>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         )
       ) : (
         <ProfileEdit />
       )}
-      {/* Diálogo para añadir/editar proyecto */}
+
+      {/* Diálogo para agregar/editar proyecto */}
       <Dialog open={formOpen} onClose={() => !loading && setFormOpen(false)} fullWidth maxWidth="md" scroll="paper">
         <DialogTitle>{editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}</DialogTitle>
         <DialogContent dividers>
@@ -635,13 +612,7 @@ const Admin = () => {
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth variant="outlined">
                   <InputLabel>Categoría</InputLabel>
-                  <Select
-                    name="category"
-                    value={formData.category || ''}
-                    onChange={handleChange}
-                    label="Categoría"
-                    required
-                  >
+                  <Select name="category" value={formData.category || ''} onChange={handleChange} label="Categoría" required>
                     <MenuItem value="diseño industrial">Diseño Industrial</MenuItem>
                     <MenuItem value="diseño visual">Diseño Visual</MenuItem>
                     <MenuItem value="dirección de arte">Dirección de Arte</MenuItem>
@@ -796,8 +767,8 @@ const Admin = () => {
                     startIcon={<AddIcon />}
                     sx={{ mb: 2 }}
                   >
-                    {imageFiles.length > 0 
-                      ? `${imageFiles.length} nuevas imágenes seleccionadas` 
+                    {imageFiles.length > 0
+                      ? `${imageFiles.length} nuevas imágenes seleccionadas`
                       : 'Subir nuevas imágenes'}
                     <input
                       type="file"
@@ -840,6 +811,7 @@ const Admin = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
       {/* Diálogo para gestionar imágenes existentes */}
       <Dialog open={imageManagementOpen} onClose={handleImageManagementClose} fullWidth maxWidth="md">
         <DialogTitle>
@@ -851,7 +823,7 @@ const Admin = () => {
               position: 'absolute',
               right: 8,
               top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: (theme) => theme.palette.grey[500]
             }}
           >
             <CloseIcon />
@@ -909,21 +881,13 @@ const Admin = () => {
                     </Tooltip>
                     {index !== 0 && (
                       <Tooltip title="Establecer como principal">
-                        <IconButton
-                          size="small"
-                          color="inherit"
-                          onClick={() => setAsPrimaryImage(index)}
-                        >
+                        <IconButton size="small" color="inherit" onClick={() => setAsPrimaryImage(index)}>
                           <StarBorderIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     )}
                     <Tooltip title="Eliminar imagen">
-                      <IconButton
-                        size="small"
-                        color="inherit"
-                        onClick={() => handleDeleteImage(image)}
-                      >
+                      <IconButton size="small" color="inherit" onClick={() => handleDeleteImage(image)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -939,6 +903,34 @@ const Admin = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Diálogo de confirmación para eliminar proyecto */}
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogContent>
+          <Typography>
+            ¿Estás seguro de eliminar el proyecto "{projectToDelete ? projectToDelete.title : ''}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button onClick={handleDelete} variant="contained" color="error" disabled={loading}>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

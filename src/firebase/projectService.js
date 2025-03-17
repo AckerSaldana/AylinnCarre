@@ -181,36 +181,66 @@ export const deleteProjectImage = async (projectId, imageUrl) => {
 
 // Eliminar un proyecto
 export const deleteProject = async (id) => {
+  if (!id) {
+    console.error("ID de proyecto no proporcionado");
+    throw new Error("Se requiere un ID de proyecto válido");
+  }
+
+  console.log("projectService: Iniciando eliminación del proyecto con ID:", id);
+  
   try {
-    // Obtener primero las imágenes para borrarlas de Storage
+    // Obtener referencia al documento
     const projectRef = doc(db, 'projects', id);
+    
+    // Verificar si el proyecto existe
     const projectSnapshot = await getDoc(projectRef);
     
-    if (projectSnapshot.exists()) {
-      const projectData = projectSnapshot.data();
-      const images = projectData.images || [];
-      
-      // Eliminar cada imagen de Storage
-      await Promise.all(
-        images.map(async (imageUrl) => {
-          try {
-            // Extraer el nombre del archivo del URL
-            const imagePath = decodeURIComponent(imageUrl.split('/o/')[1].split('?')[0]);
-            const imageRef = ref(storage, imagePath);
-            await deleteObject(imageRef);
-          } catch (error) {
-            console.error("Error deleting image: ", error);
-            // Continuar con las siguientes imágenes incluso si falla una
+    if (!projectSnapshot.exists()) {
+      console.error("Proyecto no encontrado:", id);
+      throw new Error('Proyecto no encontrado');
+    }
+    
+    // Obtener datos del proyecto, incluyendo imágenes
+    const projectData = projectSnapshot.data();
+    const images = projectData.images || [];
+    
+    console.log(`projectService: El proyecto tiene ${images.length} imágenes para eliminar`);
+    
+    // Eliminar cada imagen de Storage
+    if (images.length > 0) {
+      for (const imageUrl of images) {
+        try {
+          // Extraer el path de la imagen desde la URL
+          if (!imageUrl || typeof imageUrl !== 'string') {
+            console.warn('URL de imagen no válida:', imageUrl);
+            continue;
           }
-        })
-      );
+          
+          if (!imageUrl.includes('/o/') || !imageUrl.includes('?')) {
+            console.warn('Formato de URL no reconocido:', imageUrl);
+            continue;
+          }
+          
+          const imagePath = decodeURIComponent(imageUrl.split('/o/')[1].split('?')[0]);
+          console.log('projectService: Eliminando imagen:', imagePath);
+          
+          const imageRef = ref(storage, imagePath);
+          await deleteObject(imageRef);
+        } catch (imageError) {
+          // Solo registrar el error y continuar con las siguientes imágenes
+          console.error("Error al eliminar imagen:", imageError);
+        }
+      }
     }
     
     // Eliminar el documento del proyecto
+    console.log('projectService: Eliminando documento del proyecto...');
     await deleteDoc(projectRef);
+    console.log('projectService: Proyecto eliminado con ID:', id);
+    
     return id;
   } catch (error) {
-    console.error("Error deleting project: ", error);
+    console.error("projectService: Error al eliminar proyecto:", error);
     throw error;
   }
 };

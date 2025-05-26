@@ -141,29 +141,35 @@ const Home = () => {
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        bgcolor: '#FAFAFA',
+        minHeight: '100vh',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: '20px 20px',
+          backgroundPosition: '0 0, 10px 10px',
+          pointerEvents: 'none',
+          zIndex: 0
+        }
+      }}
+    >
       {/* Hero Section */}
       <Box 
         sx={{ 
-          bgcolor: '#FAFAFA',
           pt: { xs: 8, md: 12 }, 
           pb: { xs: 8, md: 16 },
           position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `
-              radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)
-            `,
-            backgroundSize: '20px 20px',
-            backgroundPosition: '0 0, 10px 10px',
-            pointerEvents: 'none'
-          }
+          zIndex: 1
         }}
       >
         <Container maxWidth="lg">
@@ -436,21 +442,7 @@ const Home = () => {
       <Box sx={{ 
         py: { xs: 12, md: 20 },
         position: 'relative',
-        bgcolor: '#FAFAFA',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `
-            radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px',
-          backgroundPosition: '0 0, 10px 10px',
-          pointerEvents: 'none'
-        }
+        zIndex: 1
       }}>
         <Container maxWidth="lg">
           <Typography 
@@ -576,7 +568,7 @@ const Home = () => {
                           height: '100%', 
                           display: 'flex', 
                           flexDirection: 'column',
-                          borderRadius: '0',
+                          borderRadius: '3px',
                           boxShadow: 'none',
                           border: 'none',
                           transition: 'all 0.3s ease',
@@ -606,6 +598,7 @@ const Home = () => {
                             position: 'absolute',
                             inset: -1,
                             background: '#fff',
+                            borderRadius: '3px',
                             pointerEvents: 'none',
                             zIndex: -3,
                             boxShadow: '2px 2px 8px rgba(0,0,0,0.05)'
@@ -637,10 +630,14 @@ const Home = () => {
                         }}>
                           <svg viewBox="0 0 100 100" preserveAspectRatio="none">
                             <path
-                              d={`M ${0.5 + Math.random() * 0.5} ${0.5 + Math.random() * 0.5} 
-                                  L ${99 + Math.random() * 0.5} ${0.3 + Math.random() * 0.5} 
-                                  L ${99.2 + Math.random() * 0.5} ${99 + Math.random() * 0.5} 
-                                  L ${0.3 + Math.random() * 0.5} ${99.2 + Math.random() * 0.5} 
+                              d={`M ${3 + Math.random() * 0.5} ${1 + Math.random() * 0.5} 
+                                  Q ${1 + Math.random() * 0.3} ${1 + Math.random() * 0.3} ${1 + Math.random() * 0.5} ${3 + Math.random() * 0.5}
+                                  L ${1 + Math.random() * 0.5} ${97 - Math.random() * 0.5} 
+                                  Q ${1 + Math.random() * 0.3} ${99 - Math.random() * 0.3} ${3 + Math.random() * 0.5} ${99 - Math.random() * 0.5}
+                                  L ${97 - Math.random() * 0.5} ${99 - Math.random() * 0.5} 
+                                  Q ${99 - Math.random() * 0.3} ${99 - Math.random() * 0.3} ${99 - Math.random() * 0.5} ${97 - Math.random() * 0.5}
+                                  L ${99 - Math.random() * 0.5} ${3 + Math.random() * 0.5} 
+                                  Q ${99 - Math.random() * 0.3} ${1 + Math.random() * 0.3} ${97 - Math.random() * 0.5} ${1 + Math.random() * 0.5}
                                   Z`}
                               fill="none"
                               stroke="#444"
@@ -651,10 +648,14 @@ const Home = () => {
                               vectorEffect="non-scaling-stroke"
                             />
                             <path
-                              d={`M ${0.3 + Math.random() * 0.3} ${0.3 + Math.random() * 0.3} 
-                                  L ${99.3 + Math.random() * 0.3} ${0.5 + Math.random() * 0.3} 
-                                  L ${99.1 + Math.random() * 0.3} ${99.3 + Math.random() * 0.3} 
-                                  L ${0.5 + Math.random() * 0.3} ${99.1 + Math.random() * 0.3} 
+                              d={`M ${3.2 + Math.random() * 0.3} ${1.2 + Math.random() * 0.3} 
+                                  Q ${1.2 + Math.random() * 0.2} ${1.2 + Math.random() * 0.2} ${1.2 + Math.random() * 0.3} ${3.2 + Math.random() * 0.3}
+                                  L ${1.2 + Math.random() * 0.3} ${96.8 - Math.random() * 0.3} 
+                                  Q ${1.2 + Math.random() * 0.2} ${98.8 - Math.random() * 0.2} ${3.2 + Math.random() * 0.3} ${98.8 - Math.random() * 0.3}
+                                  L ${96.8 - Math.random() * 0.3} ${98.8 - Math.random() * 0.3} 
+                                  Q ${98.8 - Math.random() * 0.2} ${98.8 - Math.random() * 0.2} ${98.8 - Math.random() * 0.3} ${96.8 - Math.random() * 0.3}
+                                  L ${98.8 - Math.random() * 0.3} ${3.2 + Math.random() * 0.3} 
+                                  Q ${98.8 - Math.random() * 0.2} ${1.2 + Math.random() * 0.2} ${96.8 - Math.random() * 0.3} ${1.2 + Math.random() * 0.3}
                                   Z`}
                               fill="none"
                               stroke="#555"
@@ -823,7 +824,7 @@ const Home = () => {
       </Box>
 
       {/* CV Highlights Section */}
-      <Box sx={{ bgcolor: '#F5F5F5', py: { xs: 8, md: 12 } }}>
+      <Box sx={{ py: { xs: 8, md: 12 }, position: 'relative', zIndex: 1 }}>
         <Container maxWidth="lg">
           <Typography 
             variant="h3" 
@@ -1480,7 +1481,7 @@ const Home = () => {
           </Grid>
         </Container>
       </Box>
-    </>
+    </Box>
   );
 };
 

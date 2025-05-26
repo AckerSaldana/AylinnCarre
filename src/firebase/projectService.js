@@ -10,6 +10,8 @@ import {
   query, 
   where, 
   orderBy,
+  limit,
+  startAfter,
   serverTimestamp 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -18,14 +20,67 @@ import { v4 as uuidv4 } from 'uuid';
 // Colección de proyectos
 const projectsCollection = collection(db, 'projects');
 
-// Obtener todos los proyectos
-export const getProjects = async () => {
-  const projectsQuery = query(projectsCollection, orderBy('createdAt', 'desc'));
+// Obtener todos los proyectos con opción de límite
+export const getProjects = async (limitCount = null) => {
+  let projectsQuery = query(projectsCollection, orderBy('createdAt', 'desc'));
+  
+  if (limitCount) {
+    projectsQuery = query(projectsCollection, orderBy('createdAt', 'desc'), limit(limitCount));
+  }
+  
   const snapshot = await getDocs(projectsQuery);
   return snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   }));
+};
+
+// Obtener solo proyectos destacados (optimizado)
+export const getFeaturedProjects = async () => {
+  const projectsQuery = query(
+    projectsCollection, 
+    where('featured', '==', true),
+    orderBy('createdAt', 'desc')
+  );
+  const snapshot = await getDocs(projectsQuery);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+};
+
+// Obtener proyectos con paginación
+export const getProjectsPaginated = async (pageSize = 10, lastDoc = null) => {
+  let projectsQuery;
+  
+  if (lastDoc) {
+    projectsQuery = query(
+      projectsCollection, 
+      orderBy('createdAt', 'desc'),
+      startAfter(lastDoc),
+      limit(pageSize)
+    );
+  } else {
+    projectsQuery = query(
+      projectsCollection, 
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+  }
+  
+  const snapshot = await getDocs(projectsQuery);
+  const projects = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  
+  const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+  
+  return {
+    projects,
+    lastDoc: lastVisible,
+    hasMore: snapshot.docs.length === pageSize
+  };
 };
 
 // Obtener proyectos por categoría

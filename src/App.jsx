@@ -1,26 +1,29 @@
 // src/App.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box } from '@mui/material';
 import { AnimatePresence } from 'framer-motion';
 import theme from './styles/theme';
 import { ProjectProvider } from './context/ProjectContext';
+import { ProfileProvider } from './context/ProfileContext';
 import LoadingScreen from './components/LoadingScreen';
 import PageTransition from './components/PageTransition';
+import CustomCursor from './components/CustomCursor';
+import './App.css';
 
 // Componentes de Layout
 import Navbar from './layout/NavBar';
 import Footer from './layout/Footer';
 
-// Páginas
-import Home from './pages/Home';
-import ProjectDetail from './pages/ProjectDetail';
-import About from './pages/About';
-import Resume from './pages/Resume';
-import Contact from './pages/Contact';
-import NotFound from './pages/NotFound';
-import Admin from './pages/Admin';
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const About = lazy(() => import('./pages/About'));
+const Resume = lazy(() => import('./pages/Resume'));
+const Contact = lazy(() => import('./pages/Contact'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Admin = lazy(() => import('./pages/Admin'));
 
 function App() {
   const location = useLocation();
@@ -30,10 +33,10 @@ function App() {
 
   // Manejar la carga inicial de la aplicación
   useEffect(() => {
-    // Simular tiempo de carga o esperar a que se carguen recursos importantes
+    // Mostrar el loading screen el tiempo suficiente para ver la animación
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500); // Ajusta este tiempo según necesites
+    }, 5000); // 5 segundos para ver toda la animación completa
 
     return () => clearTimeout(timer);
   }, []);
@@ -50,14 +53,14 @@ function App() {
     if (location.pathname !== prevLocation) {
       setPageLoading(true);
       
-      // Simular tiempo de carga entre páginas (puedes quitar esto si prefieres transiciones instantáneas)
+      // Transición rápida entre páginas
       const timer = setTimeout(() => {
         setPageLoading(false);
         setPrevLocation(location.pathname);
         
-        // Hacer scroll al inicio de la página
-        window.scrollTo(0, 0);
-      }, 300);
+        // Hacer scroll suave al inicio
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100); // Más rápido
       
       return () => clearTimeout(timer);
     }
@@ -66,21 +69,25 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {/* Only show custom cursor on desktop */}
+      {typeof window !== 'undefined' && !('ontouchstart' in window) && <CustomCursor />}
       
       {/* Pantalla de carga inicial */}
       {loading && <LoadingScreen message="Cargando portafolio..." />}
       
-      <ProjectProvider>
-        <Navbar />
-        <Box 
-          component="main" 
-          sx={{ 
-            opacity: loading ? 0 : 1, 
-            transition: 'opacity 0.5s ease-in-out',
-            minHeight: '100vh',
-            position: 'relative'
-          }}
-        >
+      <ProfileProvider>
+        <ProjectProvider>
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <Navbar />
+          <Box 
+            component="main" 
+            sx={{ 
+              opacity: loading ? 0 : 1, 
+              transition: 'opacity 0.5s ease-in-out',
+              position: 'relative',
+              flex: 1
+            }}
+          >
           {/* Pantalla de carga entre páginas */}
           {pageLoading && (
             <Box 
@@ -107,12 +114,13 @@ function App() {
           )}
           
           <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={
-                <PageTransition>
-                  <Home />
-                </PageTransition>
-              } />
+            <Suspense fallback={<LoadingScreen />}>
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={
+                  <PageTransition>
+                    <Home />
+                  </PageTransition>
+                } />
               <Route path="/project/:id" element={
                 <PageTransition>
                   <ProjectDetail />
@@ -143,25 +151,15 @@ function App() {
                   <NotFound />
                 </PageTransition>
               } />
-            </Routes>
+              </Routes>
+            </Suspense>
           </AnimatePresence>
-        </Box>
-        <Footer />
-      </ProjectProvider>
+          </Box>
+            <Footer />
+          </Box>
+        </ProjectProvider>
+      </ProfileProvider>
       
-      {/* Estilos globales para la animación de carga */}
-      <style jsx global>{`
-        @keyframes loading {
-          0% {
-            left: 0;
-            transform: translateX(-100%);
-          }
-          100% {
-            left: 100%;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </ThemeProvider>
   );
 }

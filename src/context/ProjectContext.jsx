@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { getProjects } from '../firebase/projectService';
 
 // Crear contexto
@@ -7,82 +7,96 @@ const ProjectContext = createContext();
 // Proveedor del contexto
 export const ProjectProvider = ({ children }) => {
   const [projects, setProjects] = useState([]);
-  const [featuredProjects, setFeaturedProjects] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastFetch, setLastFetch] = useState(null);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
   
-  // Cargar proyectos al iniciar
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        setLoading(true);
-        const data = await getProjects();
-        setProjects(data);
-        
-        // Extraer proyectos destacados
-        const featured = data.filter(project => project.featured);
-        setFeaturedProjects(featured);
-        
-        // Extraer categorías únicas
-        const uniqueCategories = [...new Set(data.map(project => project.category))];
-        setCategories(['all', ...uniqueCategories]);
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error loading projects:', err);
-        setError('No se pudieron cargar los proyectos. Por favor, intenta de nuevo más tarde.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Memoized featured projects
+  const featuredProjects = useMemo(() => {
+    return projects.filter(project => project.featured);
+  }, [projects]);
+  
+  // Memoized categories
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(projects.map(project => project.category))];
+    return ['all', ...uniqueCategories];
+  }, [projects]);
+  
+  // Load projects with caching
+  const loadProjects = useCallback(async (force = false) => {
+    // Check cache validity
+    if (!force && lastFetch && Date.now() - lastFetch < CACHE_DURATION) {
+      return;
+    }
     
-    loadProjects();
-  }, []);
-  
-  // Recargar proyectos (útil después de actualizaciones)
-  const refreshProjects = async () => {
     try {
       setLoading(true);
+      
+      // Check sessionStorage cache first
+      const cachedData = sessionStorage.getItem('projectsCache');
+      const cachedTime = sessionStorage.getItem('projectsCacheTime');
+      
+      if (!force && cachedData && cachedTime) {
+        const cacheAge = Date.now() - parseInt(cachedTime);
+        if (cacheAge < CACHE_DURATION) {
+          setProjects(JSON.parse(cachedData));
+          setLastFetch(parseInt(cachedTime));
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Fetch fresh data
       const data = await getProjects();
       setProjects(data);
+      setLastFetch(Date.now());
       
-      const featured = data.filter(project => project.featured);
-      setFeaturedProjects(featured);
-      
-      const uniqueCategories = [...new Set(data.map(project => project.category))];
-      setCategories(['all', ...uniqueCategories]);
+      // Update cache
+      sessionStorage.setItem('projectsCache', JSON.stringify(data));
+      sessionStorage.setItem('projectsCacheTime', Date.now().toString());
       
       setError(null);
     } catch (err) {
-      console.error('Error refreshing projects:', err);
-      setError('No se pudieron recargar los proyectos. Por favor, intenta de nuevo más tarde.');
+      console.error('Error loading projects:', err);
+      setError('No se pudieron cargar los proyectos. Por favor, intenta de nuevo más tarde.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [lastFetch]);
   
-  // Filtrar proyectos por categoría
-  const filterProjectsByCategory = (category) => {
+  // Initial load
+  useEffect(() => {
+    loadProjects();
+  }, []);
+  
+  // Force refresh projects
+  const refreshProjects = useCallback(async () => {
+    await loadProjects(true);
+  }, [loadProjects]);
+  
+  // Memoized filter function
+  const filterProjectsByCategory = useCallback((category) => {
     if (category === 'all') {
       return projects;
     }
     
     return projects.filter(project => project.category === category);
-  };
+  }, [projects]);
+  
+  // Memoized context value
+  const value = useMemo(() => ({
+    projects,
+    featuredProjects,
+    categories,
+    loading,
+    error,
+    refreshProjects,
+    filterProjectsByCategory
+  }), [projects, featuredProjects, categories, loading, error, refreshProjects, filterProjectsByCategory]);
   
   return (
-    <ProjectContext.Provider 
-      value={{
-        projects,
-        featuredProjects,
-        categories,
-        loading,
-        error,
-        refreshProjects,
-        filterProjectsByCategory
-      }}
-    >
+    <ProjectContext.Provider value={value}>
       {children}
     </ProjectContext.Provider>
   );

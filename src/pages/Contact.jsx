@@ -24,6 +24,76 @@ import {
 import { getProfile } from '../firebase/profileService';
 import { useEffect } from 'react';
 
+// Import Google Fonts
+import '@fontsource/permanent-marker';
+import '@fontsource/kalam/300.css';
+import '@fontsource/kalam/400.css';
+import '@fontsource/kalam/700.css';
+import '@fontsource/caveat/400.css';
+import '@fontsource/caveat/700.css';
+
+// Sketchy border component - moved outside and memoized
+const SketchyBorder = React.memo(({ children, sx = {} }) => {
+  // Generate random values only once
+  const path1 = React.useMemo(() => 
+    `M ${0.5 + Math.random() * 0.5} ${0.5 + Math.random() * 0.5} 
+     L ${99 + Math.random() * 0.5} ${0.3 + Math.random() * 0.5} 
+     L ${99.2 + Math.random() * 0.5} ${99 + Math.random() * 0.5} 
+     L ${0.3 + Math.random() * 0.5} ${99.2 + Math.random() * 0.5} 
+     Z`, []
+  );
+  
+  const path2 = React.useMemo(() =>
+    `M ${0.3 + Math.random() * 0.3} ${0.3 + Math.random() * 0.3} 
+     L ${99.3 + Math.random() * 0.3} ${0.5 + Math.random() * 0.3} 
+     L ${99.1 + Math.random() * 0.3} ${99.3 + Math.random() * 0.3} 
+     L ${0.5 + Math.random() * 0.3} ${99.1 + Math.random() * 0.3} 
+     Z`, []
+  );
+
+  return (
+    <Box sx={{ position: 'relative', ...sx }}>
+      {children}
+      <Box sx={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        '& svg': {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'visible'
+        }
+      }}>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path
+            d={path1}
+            fill="none"
+            stroke="#444"
+            strokeWidth="0.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.9"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={path2}
+            fill="none"
+            stroke="#555"
+            strokeWidth="0.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      </Box>
+    </Box>
+  );
+});
+
 const Contact = () => {
   const [formValues, setFormValues] = useState({
     name: '',
@@ -143,9 +213,29 @@ const Contact = () => {
     setSubmitSuccess(false);
     setSubmitError(false);
   };
-  
+
   return (
-    <Box sx={{ pt: 10, pb: 8 }}>
+    <Box sx={{ 
+      pt: { xs: 8, md: 10 }, 
+      pb: { xs: 6, md: 10 },
+      bgcolor: '#FAFAFA',
+      position: 'relative',
+      minHeight: '100vh',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `
+          radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)
+        `,
+        backgroundSize: '20px 20px',
+        backgroundPosition: '0 0, 10px 10px',
+        pointerEvents: 'none'
+      }
+    }}>
       <Container maxWidth="lg">
         <Grid container spacing={6}>
           <Grid item xs={12} md={5}>
@@ -154,43 +244,108 @@ const Contact = () => {
               component="h1"
               gutterBottom
               sx={{
-                fontFamily: "'Playfair Display', serif",
-                fontWeight: 700,
-                mb: 4
+                fontFamily: '"Permanent Marker", cursive',
+                fontWeight: 400,
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                mb: 4,
+                color: '#1a1a1a',
+                transform: 'rotate(-0.5deg)',
+                textShadow: '2px 2px 0px rgba(0,0,0,0.05)'
               }}
             >
               Contacto
             </Typography>
             
-            <Typography variant="body1" paragraph sx={{ mb: 4 }}>
+            <Typography variant="body1" paragraph sx={{ 
+              mb: 4,
+              fontFamily: '"Kalam", cursive',
+              fontSize: '1.1rem',
+              lineHeight: 1.8,
+              color: '#444',
+              fontWeight: 400
+            }}>
               ¿Tienes un proyecto en mente o quieres colaborar? Estoy disponible para trabajos freelance,
               pasantías y oportunidades laborales. ¡Contáctame y platiquemos!
             </Typography>
             
-            <Stack spacing={3} sx={{ mb: 6 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <EmailIcon sx={{ color: 'text.secondary', mr: 2 }} />
-                <Typography variant="body1">
-                {contactData.email}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <PhoneIcon sx={{ color: 'text.secondary', mr: 2 }} />
-                <Typography variant="body1">
-                {contactData.phone}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <LocationIcon sx={{ color: 'text.secondary', mr: 2 }} />
-                <Typography variant="body1">
-                {contactData.location}
-                </Typography>
-              </Box>
-            </Stack>
+            <SketchyBorder sx={{ mb: 6, p: 3, background: '#fff', transform: 'rotate(-0.3deg)' }}>
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2.5
+                  }}>
+                    <EmailIcon sx={{ color: '#000', fontSize: 16 }} />
+                  </Box>
+                  <Typography variant="body1" sx={{
+                    fontFamily: '"Kalam", cursive',
+                    fontWeight: 400,
+                    color: '#333'
+                  }}>
+                    {contactData.email}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2.5
+                  }}>
+                    <PhoneIcon sx={{ color: '#000', fontSize: 16 }} />
+                  </Box>
+                  <Typography variant="body1" sx={{
+                    fontFamily: '"Kalam", cursive',
+                    fontWeight: 400,
+                    color: '#333'
+                  }}>
+                    {contactData.phone}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2.5
+                  }}>
+                    <LocationIcon sx={{ color: '#000', fontSize: 16 }} />
+                  </Box>
+                  <Typography variant="body1" sx={{
+                    fontFamily: '"Kalam", cursive',
+                    fontWeight: 400,
+                    color: '#333'
+                  }}>
+                    {contactData.location}
+                  </Typography>
+                </Box>
+              </Stack>
+            </SketchyBorder>
             
-            <Typography variant="h6" gutterBottom sx={{ fontFamily: "'Playfair Display', serif" }}>
+            <Typography variant="h6" gutterBottom sx={{ 
+              fontFamily: '"Permanent Marker", cursive',
+              fontWeight: 400,
+              fontSize: '1.3rem',
+              color: '#1a1a1a',
+              transform: 'rotate(-0.3deg)',
+              mb: 2
+            }}>
               Sígueme
             </Typography>
             
@@ -208,14 +363,49 @@ const Contact = () => {
           </Grid>
           
           <Grid item xs={12} md={7}>
-            <Paper elevation={0} sx={{ p: 4, bgcolor: 'grey.50' }}>
+            <SketchyBorder sx={{ 
+              p: 4, 
+              background: '#fff',
+              transform: 'rotate(0.4deg)',
+              backgroundImage: `
+                repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 20px,
+                  rgba(0,0,0,0.01) 20px,
+                  rgba(0,0,0,0.01) 21px
+                ),
+                repeating-linear-gradient(
+                  -45deg,
+                  transparent,
+                  transparent 20px,
+                  rgba(0,0,0,0.01) 20px,
+                  rgba(0,0,0,0.01) 21px
+                )
+              `
+            }}>
               <Typography
                 variant="h5"
                 component="h2"
                 gutterBottom
                 sx={{
-                  fontFamily: "'Playfair Display', serif",
-                  mb: 3
+                  fontFamily: '"Permanent Marker", cursive',
+                  fontWeight: 400,
+                  fontSize: '1.6rem',
+                  mb: 4,
+                  color: '#1a1a1a',
+                  transform: 'rotate(-0.4deg)',
+                  position: 'relative',
+                  '&:after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: -10,
+                    left: 0,
+                    width: '100px',
+                    height: '2px',
+                    background: 'linear-gradient(to right, #333 20%, transparent 80%)',
+                    transform: 'rotate(-0.5deg)'
+                  }
                 }}
               >
                 Envía un mensaje
@@ -234,6 +424,33 @@ const Contact = () => {
                       error={!!formErrors.name}
                       helperText={formErrors.name}
                       variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: '"Kalam", cursive',
+                          '& fieldset': {
+                            borderColor: '#666',
+                            borderRadius: 0,
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#444',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#333',
+                            borderWidth: '2px',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontFamily: '"Kalam", cursive',
+                          color: '#666',
+                          '&.Mui-focused': {
+                            color: '#333',
+                          },
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontFamily: '"Caveat", cursive',
+                          fontSize: '1rem',
+                        }
+                      }}
                     />
                   </Grid>
                   
@@ -249,6 +466,33 @@ const Contact = () => {
                       error={!!formErrors.email}
                       helperText={formErrors.email}
                       variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: '"Kalam", cursive',
+                          '& fieldset': {
+                            borderColor: '#666',
+                            borderRadius: 0,
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#444',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#333',
+                            borderWidth: '2px',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontFamily: '"Kalam", cursive',
+                          color: '#666',
+                          '&.Mui-focused': {
+                            color: '#333',
+                          },
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontFamily: '"Caveat", cursive',
+                          fontSize: '1rem',
+                        }
+                      }}
                     />
                   </Grid>
                   
@@ -260,6 +504,29 @@ const Contact = () => {
                       value={formValues.subject}
                       onChange={handleChange}
                       variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: '"Kalam", cursive',
+                          '& fieldset': {
+                            borderColor: '#666',
+                            borderRadius: 0,
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#444',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#333',
+                            borderWidth: '2px',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontFamily: '"Kalam", cursive',
+                          color: '#666',
+                          '&.Mui-focused': {
+                            color: '#333',
+                          },
+                        }
+                      }}
                     />
                   </Grid>
                   
@@ -276,6 +543,33 @@ const Contact = () => {
                       error={!!formErrors.message}
                       helperText={formErrors.message}
                       variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          fontFamily: '"Kalam", cursive',
+                          '& fieldset': {
+                            borderColor: '#666',
+                            borderRadius: 0,
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#444',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#333',
+                            borderWidth: '2px',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontFamily: '"Kalam", cursive',
+                          color: '#666',
+                          '&.Mui-focused': {
+                            color: '#333',
+                          },
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontFamily: '"Caveat", cursive',
+                          fontSize: '1rem',
+                        }
+                      }}
                     />
                   </Grid>
                   
@@ -287,10 +581,28 @@ const Contact = () => {
                       disabled={isSubmitting}
                       sx={{
                         mt: 2,
-                        bgcolor: 'text.primary',
-                        color: 'background.paper',
+                        bgcolor: '#333',
+                        color: '#fff',
+                        borderRadius: '3px',
+                        px: 4,
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        fontFamily: '"Kalam", cursive',
+                        boxShadow: 'none',
+                        position: 'relative',
+                        transform: 'rotate(0.2deg)',
+                        border: '2px solid #333',
                         '&:hover': {
-                          bgcolor: 'text.secondary'
+                          bgcolor: '#222',
+                          borderColor: '#222',
+                          boxShadow: 'none'
+                        },
+                        '&:disabled': {
+                          bgcolor: '#999',
+                          borderColor: '#999',
+                          color: '#fff'
                         }
                       }}
                     >
@@ -303,7 +615,7 @@ const Contact = () => {
                   </Grid>
                 </Grid>
               </Box>
-            </Paper>
+            </SketchyBorder>
           </Grid>
         </Grid>
       </Container>
@@ -314,7 +626,13 @@ const Contact = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ 
+          width: '100%',
+          fontFamily: '"Kalam", cursive',
+          '& .MuiAlert-message': {
+            fontFamily: '"Kalam", cursive',
+          }
+        }}>
           ¡Mensaje enviado con éxito! Te responderé lo antes posible.
         </Alert>
       </Snackbar>
@@ -325,7 +643,13 @@ const Contact = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ 
+          width: '100%',
+          fontFamily: '"Kalam", cursive',
+          '& .MuiAlert-message': {
+            fontFamily: '"Kalam", cursive',
+          }
+        }}>
           Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.
         </Alert>
       </Snackbar>

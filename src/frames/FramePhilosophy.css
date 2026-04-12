@@ -1,0 +1,89 @@
+/* ============================================
+   FRAME 2: PHILOSOPHY — Scrub text reveal
+   ============================================ */
+
+.frame-philosophy {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--beige);
+  overflow: hidden;
+}
+
+.frame-philosophy__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 80px;
+  padding: 0 24px;
+  will-change: transform, opacity;
+}
+
+/* --- X Logo frame sequence --- */
+.frame-philosophy__xlogo {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.frame-philosophy__logo-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  will-change: opacity;
+}
+
+/* --- Tagline text with double-wrapper reveal --- */
+.frame-philosophy__text {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4.5vw, 3.8rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #75443C;
+  text-align: center;
+  max-width: 800px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.3em;
+}
+
+/* Outer wrapper = mask */
+.frame-philosophy__word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.05em;
+}
+
+/* Inner wrapper = animated element */
+.frame-philosophy__word-inner {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* --- Mobile --- */
+@media (max-width: 768px) {
+  .frame-philosophy__content {
+    gap: 50px;
+    padding: 0 20px;
+  }
+
+  .frame-philosophy__xlogo {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-philosophy__word-inner {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

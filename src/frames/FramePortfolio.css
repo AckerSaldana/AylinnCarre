@@ -1,0 +1,139 @@
+/* ============================================
+   FRAME 4: PORTFOLIO — Horizontal scroll gallery
+   ============================================ */
+
+.frame-portfolio {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: var(--beige);
+  overflow: hidden;
+}
+
+/* --- Header label (stays in top-left during scroll) --- */
+.frame-portfolio__header {
+  position: absolute;
+  top: 5vh;
+  left: 6vw;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.frame-portfolio__label {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.frame-portfolio__count {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--gray-light);
+}
+
+/* --- Horizontal track --- */
+.frame-portfolio__track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 4vw;
+  padding: 0 10vw;
+  will-change: transform;
+}
+
+/* --- Individual project --- */
+.frame-portfolio__item {
+  flex-shrink: 0;
+  width: 60vw;
+  height: 70vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.frame-portfolio__image-wrap {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.frame-portfolio__img {
+  width: 120%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* --- Project info --- */
+.frame-portfolio__info {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.frame-portfolio__number {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--gray-light);
+  letter-spacing: 0.05em;
+}
+
+.frame-portfolio__title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 500;
+  color: var(--gray-dark);
+  will-change: transform, opacity;
+}
+
+/* --- Mobile: vertical layout instead of horizontal scroll --- */
+@media (max-width: 768px) {
+  .frame-portfolio {
+    height: auto;
+    padding: 60px 0;
+  }
+
+  .frame-portfolio__track {
+    flex-direction: column;
+    height: auto;
+    gap: 40px;
+    padding: 60px 20px 40px;
+  }
+
+  .frame-portfolio__item {
+    width: 100%;
+    height: auto;
+  }
+
+  .frame-portfolio__image-wrap {
+    aspect-ratio: 16 / 10;
+  }
+
+  .frame-portfolio__img {
+    width: 100%;
+  }
+
+  .frame-portfolio__header {
+    position: relative;
+    top: 0;
+    left: 0;
+    padding: 0 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-portfolio__item {
+    transform: none !important;
+  }
+  .frame-portfolio__img {
+    transform: none !important;
+  }
+}

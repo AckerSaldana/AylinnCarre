@@ -1,0 +1,165 @@
+/* ============================================
+   FRAME 8: CONTACT — CTA Finale
+   ============================================ */
+
+.frame-contact {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: var(--beige);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frame-contact__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  padding: 0 24px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* --- Hero text area --- */
+.frame-contact__hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.frame-contact__cta {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--beige);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.3em;
+}
+
+.frame-contact__sub {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--terracota-light);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.25em;
+}
+
+/* Double-wrapper for word reveals */
+.frame-contact__word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.05em;
+}
+
+.frame-contact__cta-word,
+.frame-contact__sub-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* --- Contact info grid --- */
+.frame-contact__info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.frame-contact__row {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.frame-contact__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--beige-dark);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  will-change: transform, opacity, filter;
+}
+
+.frame-contact__item:hover {
+  color: var(--terracota-light);
+}
+
+.frame-contact__item--social {
+  gap: 14px;
+}
+
+.frame-contact__item--social a {
+  color: var(--beige-dark);
+  transition: color 0.3s ease, transform 0.3s ease;
+  display: flex;
+}
+
+.frame-contact__item--social a:hover {
+  color: var(--terracota-light);
+  transform: scale(1.1);
+}
+
+.frame-contact__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* --- Footer --- */
+.frame-contact__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 250, 247, 0.3);
+  margin-top: 20px;
+}
+
+.frame-contact__footer-logo {
+  opacity: 0.4;
+}
+
+.frame-contact__copyright {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* --- Mobile --- */
+@media (max-width: 768px) {
+  .frame-contact__content {
+    gap: 40px;
+    padding: 0 20px;
+  }
+
+  .frame-contact__row {
+    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-contact__cta-word,
+  .frame-contact__sub-word,
+  .frame-contact__item {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

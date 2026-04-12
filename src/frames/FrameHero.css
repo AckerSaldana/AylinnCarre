@@ -1,0 +1,159 @@
+/* ============================================
+   FRAME 1: HERO — Pinned parallax dissolve
+   ============================================ */
+
+.frame-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #0a0204;
+}
+
+/* --- Background image layer --- */
+.frame-hero__bg {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  will-change: transform;
+}
+
+.frame-hero__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Dark overlay --- */
+.frame-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(10, 2, 4, 0.35) 0%,
+    rgba(10, 2, 4, 0.7) 100%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* --- Cinematic vignette --- */
+.frame-hero__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    transparent 40%,
+    rgba(10, 2, 4, 0.6) 100%
+  );
+  opacity: 0.6;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* --- Film grain texture --- */
+.frame-hero__grain {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  animation: hero-grain 8s steps(8) infinite;
+}
+
+@keyframes hero-grain {
+  0%, 100% { transform: translate(0, 0); }
+  12.5%    { transform: translate(-10%, -5%); }
+  25%      { transform: translate(5%, -10%); }
+  37.5%    { transform: translate(-5%, 10%); }
+  50%      { transform: translate(10%, 5%); }
+  62.5%    { transform: translate(-10%, 10%); }
+  75%      { transform: translate(5%, -5%); }
+  87.5%    { transform: translate(-5%, -10%); }
+}
+
+/* --- Content / Logo --- */
+.frame-hero__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.frame-hero__logo {
+  width: min(850px, 75vw);
+  height: auto;
+  will-change: transform, opacity, filter;
+  /* Entrance state */
+  opacity: 0;
+  transform: scale(0.95);
+  filter: blur(6px);
+  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
+              transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
+              filter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+}
+
+/* Entrance animation — triggered by React state */
+.frame-hero--loaded .frame-hero__logo {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0px);
+}
+
+/* --- Scroll indicator --- */
+.frame-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 250, 247, 0.3);
+  transform: translateX(-50%);
+  animation: hero-scroll-hint 2s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes hero-scroll-hint {
+  0%, 100% { opacity: 0; transform: translateX(-50%) scaleY(0); transform-origin: top; }
+  50% { opacity: 1; transform: translateX(-50%) scaleY(1); }
+}
+
+/* --- Mobile --- */
+@media (max-width: 768px) {
+  .frame-hero {
+    height: 100svh;
+  }
+
+  .frame-hero__logo {
+    width: 85vw;
+  }
+
+  .frame-hero::after {
+    height: 30px;
+    bottom: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-hero__grain {
+    animation: none;
+  }
+  .frame-hero::after {
+    animation: none;
+    opacity: 0.3;
+  }
+  .frame-hero__logo {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}

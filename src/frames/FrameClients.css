@@ -1,0 +1,73 @@
+/* ============================================
+   FRAME 7: CLIENTS — Velocity-driven marquee
+   ============================================ */
+
+.frame-clients {
+  position: relative;
+  width: 100%;
+  padding: 12vh 0;
+  background: var(--beige);
+  overflow: hidden;
+}
+
+.frame-clients__title {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--gold);
+  text-align: center;
+  letter-spacing: 0.05em;
+  margin-bottom: 6vh;
+}
+
+/* --- Marquee container --- */
+.frame-clients__marquee {
+  width: 100%;
+  overflow: hidden;
+}
+
+.frame-clients__track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  will-change: transform;
+}
+
+.frame-clients__logo-wrap {
+  flex-shrink: 0;
+  padding: 0 clamp(24px, 4vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.frame-clients__logo {
+  height: clamp(30px, 4vw, 50px);
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(100%) opacity(0.5);
+  transition: filter 0.6s ease;
+}
+
+.frame-clients__logo:hover {
+  filter: grayscale(0%) opacity(1);
+}
+
+/* --- Mobile --- */
+@media (max-width: 768px) {
+  .frame-clients {
+    padding: 8vh 0;
+  }
+
+  .frame-clients__logo {
+    height: 25px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame-clients__track {
+    animation: none !important;
+    transform: none !important;
+  }
+}

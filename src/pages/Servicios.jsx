@@ -30,7 +30,7 @@ function Servicios() {
   useEffect(() => {
     const id = setInterval(() => {
       setCurrentLogo((prev) => (prev + 1) % brandLogos.length)
-    }, 2500)
+    }, 1500)
     return () => clearInterval(id)
   }, [])
 

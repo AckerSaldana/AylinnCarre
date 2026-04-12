@@ -19,26 +19,64 @@
 }
 
 .servicios__card {
+  position: relative;
   aspect-ratio: 4 / 3;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.servicios__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.servicios__card-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.servicios__card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .servicios__card-title {
   font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-size: clamp(2rem, 4vw, 3.4375rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.03em;
+  color: #FFFAF7;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+/* Hover overlay */
+.servicios__card-hover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--hover-color);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  padding: 40px;
+}
+
+.servicios__card--has-hover:hover .servicios__card-hover {
+  opacity: 1;
+}
+
+.servicios__card--has-hover:hover .servicios__card-overlay {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.servicios__card-desc {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  text-align: center;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 /* Clientes */
@@ -48,30 +86,29 @@
   font-style: italic;
   color: var(--gold);
   margin-bottom: 36px;
+  text-align: center;
 }
 
-.clientes__logos {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  flex-wrap: wrap;
+.clientes__carousel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: 200px;
+  margin: 0 auto;
 }
 
-.clientes__logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
-  border: 1px solid var(--beige-dark);
-  border-radius: 4px;
+.clientes__carousel-logo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
 
-.clientes__logo-text {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--gray-dark);
-  letter-spacing: 0.02em;
+.clientes__carousel-logo--active {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -84,11 +121,8 @@
     margin-bottom: 56px;
   }
 
-  .clientes__title {
-    text-align: center;
-  }
-
-  .clientes__logos {
-    justify-content: center;
+  .clientes__carousel {
+    max-width: 280px;
+    height: 150px;
   }
 }

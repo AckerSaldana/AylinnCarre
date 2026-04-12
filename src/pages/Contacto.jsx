@@ -16,6 +16,7 @@ function Contacto() {
         </div>
 
         <div className="contacto__info">
+          {/* Row 1: Email + Phone */}
           <div className="contacto__row">
             <a href="mailto:xyrinstudio@gmail.com" className="contacto__item">
               <svg className="contacto__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -33,6 +34,7 @@ function Contacto() {
             </a>
           </div>
 
+          {/* Row 2: Website + Facebook + Social */}
           <div className="contacto__row">
             <div className="contacto__item">
               <svg className="contacto__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -49,24 +51,22 @@ function Contacto() {
               </svg>
               <span>Xyrin Studio</span>
             </div>
-          </div>
 
-          <div className="contacto__row contacto__row--social">
-            <a href="https://instagram.com/xyryin.studio" target="_blank" rel="noopener noreferrer" className="contacto__social" aria-label="Instagram">
-              <svg className="contacto__icon-social" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" />
-                <circle cx="12" cy="12" r="5" />
-                <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-              </svg>
-            </a>
-
-            <a href="https://tiktok.com/@xyryin.studio" target="_blank" rel="noopener noreferrer" className="contacto__social" aria-label="TikTok">
-              <svg className="contacto__icon-social" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V9.05a8.27 8.27 0 004.76 1.51V7.12a4.83 4.83 0 01-1-.43z" />
-              </svg>
-            </a>
-
-            <span className="contacto__handle">@xyryin.studio</span>
+            <div className="contacto__item">
+              <a href="https://instagram.com/xyryin.studio" target="_blank" rel="noopener noreferrer" className="contacto__social-link" aria-label="Instagram">
+                <svg className="contacto__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a href="https://tiktok.com/@xyryin.studio" target="_blank" rel="noopener noreferrer" className="contacto__social-link" aria-label="TikTok">
+                <svg className="contacto__icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V9.05a8.27 8.27 0 004.76 1.51V7.12a4.83 4.83 0 01-1-.43z" />
+                </svg>
+              </a>
+              <span>@xyryin.studio</span>
+            </div>
           </div>
         </div>
       </div>

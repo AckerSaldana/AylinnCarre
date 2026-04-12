@@ -1,8 +1,12 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* Paleta de colores XYRIN */
   --burgundy: #6B1C23;
   --burgundy-dark: #4A1218;
-  --beige: #F5F0EB;
+  --beige: #FFFAF7;
   --beige-dark: #EDE6DF;
   --gold: #8B7D3C;
   --gold-light: #A89A5B;
@@ -14,8 +18,8 @@
   --white: #FEFEFE;
 
   /* Tipografías */
-  --font-heading: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-heading: 'hagrid', Georgia, serif;
+  --font-body: 'hagrid-text', system-ui, sans-serif;
 
   font-family: var(--font-body);
   font-size: 16px;

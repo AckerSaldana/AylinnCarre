@@ -1,12 +1,71 @@
+import { useEffect, useRef, useState } from 'react'
 import './Nosotros.css'
 
 const team = [
-  { name: 'Ximena Lara', initials: 'XL' },
-  { name: 'Ariadne Tapia', initials: 'AT' },
-  { name: 'Aylinn Carré', initials: 'AC' },
+  {
+    name: 'Ximena Rivera',
+    photo: '/team/ximena.jpg',
+    instagram: '@anemixrl',
+    role: 'Diseñadora de producto',
+    focus: 'Enfoque en procesos\nde manufactura y calidad',
+  },
+  {
+    name: 'Ariadne Tapia',
+    photo: '/team/ariadne.jpg',
+    instagram: '@ariadne.eee',
+    role: 'Diseñadora de producto',
+    focus: 'Enfoque en\nCAD y renderización',
+  },
+  {
+    name: 'Aylinn Carré',
+    photo: '/team/aylinn.jpg',
+    instagram: '@itslynncarre',
+    role: 'Diseñadora de producto',
+    focus: 'Enfoque en\ndiseño visual y UX/UI',
+  },
 ]
 
 function Nosotros() {
+  const [step, setStep] = useState(0)
+  const valuesRef = useRef(null)
+
+  useEffect(() => {
+    const el = valuesRef.current
+    if (!el) return
+    let timers = []
+
+    const runSequence = () => {
+      setStep(0)
+      let i = 0
+      const run = () => {
+        i++
+        setStep(i)
+        if (i < 5) {
+          timers.push(setTimeout(run, 700))
+        } else {
+          // Hold for 3s then restart
+          timers.push(setTimeout(runSequence, 3000))
+        }
+      }
+      timers.push(setTimeout(run, 300))
+    }
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          runSequence()
+          obs.disconnect()
+        }
+      },
+      { threshold: 0.4 }
+    )
+    obs.observe(el)
+    return () => {
+      obs.disconnect()
+      timers.forEach(clearTimeout)
+    }
+  }, [])
+
   return (
     <div className="nosotros">
       <div className="container">
@@ -31,15 +90,30 @@ function Nosotros() {
           </div>
         </div>
 
+        <div ref={valuesRef} className="values">
+          <p className="values__text">
+            <span className={`values__word${step >= 1 ? ' values__word--visible' : ''}`}>Humanos</span>
+            <span className={`values__plus${step >= 2 ? ' values__plus--visible' : ''}`}>&nbsp;+&nbsp;</span>
+            <span className={`values__word${step >= 3 ? ' values__word--visible' : ''}`}>Innovadores</span>
+            <span className={`values__plus${step >= 4 ? ' values__plus--visible' : ''}`}>&nbsp;+&nbsp;</span>
+            <span className={`values__word${step >= 5 ? ' values__word--visible' : ''}`}>Conscientes</span>
+          </p>
+        </div>
+
         <section className="team">
           <h2 className="team__title">The team</h2>
           <div className="team__grid">
             {team.map((member) => (
               <div key={member.name} className="team__member">
                 <div className="team__photo">
-                  <span className="team__initials">{member.initials}</span>
+                  <img src={member.photo} alt={member.name} />
+                  <div className="team__overlay">
+                    <span className="team__instagram">{member.instagram}</span>
+                  </div>
                 </div>
-                <p className="team__name">{member.name}</p>
+                <h3 className="team__name">{member.name}</h3>
+                <p className="team__role">{member.role}</p>
+                <p className="team__focus">{member.focus}</p>
               </div>
             ))}
           </div>

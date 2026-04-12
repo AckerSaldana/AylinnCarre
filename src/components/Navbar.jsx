@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import './Navbar.css'
 
@@ -12,16 +12,31 @@ const navLinks = [
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [logoPlaying, setLogoPlaying] = useState(false)
+  const logoTimer = useRef(null)
+
+  const handleLogoHover = () => {
+    if (logoPlaying) return
+    setLogoPlaying(true)
+    logoTimer.current = setTimeout(() => setLogoPlaying(false), 1200)
+  }
 
   return (
     <nav className="navbar">
       <div className="navbar__inner">
-        <NavLink to="/" className="navbar__logo" aria-label="XYRIN Home">
-          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 8L20 20M20 20L32 8M20 20L8 32M20 20L32 32" stroke="var(--gold)" strokeWidth="3" strokeLinecap="round" />
-            <path d="M20 4L20 36" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-            <path d="M4 20L36 20" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-          </svg>
+        <NavLink
+          to="/"
+          className="navbar__logo"
+          aria-label="XYRIN Home"
+          onMouseEnter={handleLogoHover}
+        >
+          <div className={`nav-xlogo${logoPlaying ? ' nav-xlogo--playing' : ''}`}>
+            <img className="nav-xlogo__frame nav-xlogo__frame--1" src="/logo-frames/Default.svg" alt="" />
+            <img className="nav-xlogo__frame nav-xlogo__frame--2" src="/logo-frames/Variant2.svg" alt="" />
+            <img className="nav-xlogo__frame nav-xlogo__frame--3" src="/logo-frames/Variant3.svg" alt="" />
+            <img className="nav-xlogo__frame nav-xlogo__frame--4" src="/logo-frames/Variant4.svg" alt="" />
+            <img className="nav-xlogo__frame nav-xlogo__frame--5" src="/logo-frames/Variant5.svg" alt="" />
+          </div>
         </NavLink>
 
         <button

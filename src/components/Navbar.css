@@ -2,14 +2,13 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--beige);
-  border-bottom: 1px solid var(--beige-dark);
+  background-color: #9E976B;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .navbar__inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px 24px;
+  width: 100%;
+  padding: 16px 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -21,8 +20,85 @@
   flex-shrink: 0;
 }
 
-.navbar__logo:hover {
-  opacity: 0.8;
+/* ---------- Navbar animated X logo ---------- */
+
+.nav-xlogo {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  filter: brightness(0) invert(1);
+}
+
+.nav-xlogo__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+}
+
+/* Resting state: show final X */
+.nav-xlogo__frame--5 {
+  opacity: 1;
+}
+
+/* Hover animation: 1.2s sequence with cross-fade */
+.nav-xlogo--playing .nav-xlogo__frame--1 {
+  animation: navFrame1 1.2s linear forwards;
+}
+.nav-xlogo--playing .nav-xlogo__frame--2 {
+  animation: navFrame2 1.2s linear forwards;
+}
+.nav-xlogo--playing .nav-xlogo__frame--3 {
+  animation: navFrame3 1.2s linear forwards;
+}
+.nav-xlogo--playing .nav-xlogo__frame--4 {
+  animation: navFrame4 1.2s linear forwards;
+}
+.nav-xlogo--playing .nav-xlogo__frame--5 {
+  animation: navFrame5 1.2s linear forwards;
+}
+
+@keyframes navFrame1 {
+  0%   { opacity: 1; }
+  18%  { opacity: 1; }
+  22%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes navFrame2 {
+  0%   { opacity: 0; }
+  18%  { opacity: 0; }
+  22%  { opacity: 1; }
+  38%  { opacity: 1; }
+  42%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes navFrame3 {
+  0%   { opacity: 0; }
+  38%  { opacity: 0; }
+  42%  { opacity: 1; }
+  58%  { opacity: 1; }
+  62%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes navFrame4 {
+  0%   { opacity: 0; }
+  58%  { opacity: 0; }
+  62%  { opacity: 1; }
+  78%  { opacity: 1; }
+  82%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes navFrame5 {
+  0%   { opacity: 0; }
+  78%  { opacity: 0; }
+  82%  { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 .navbar__links {
@@ -35,7 +111,7 @@
   font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 400;
-  color: var(--gray-dark);
+  color: var(--white);
   letter-spacing: 0.5px;
   padding: 4px 0;
   position: relative;
@@ -49,12 +125,12 @@
   left: 0;
   width: 0;
   height: 1.5px;
-  background-color: var(--gold);
+  background-color: var(--beige);
   transition: width 0.3s ease;
 }
 
 .navbar__link:hover {
-  color: var(--gold);
+  color: var(--beige);
 }
 
 .navbar__link:hover::after {
@@ -62,12 +138,12 @@
 }
 
 .navbar__link--active {
-  color: var(--burgundy);
+  color: var(--white);
 }
 
 .navbar__link--active::after {
   width: 100%;
-  background-color: var(--burgundy);
+  background-color: var(--white);
 }
 
 /* Hamburger */
@@ -86,7 +162,7 @@
   display: block;
   width: 24px;
   height: 2px;
-  background-color: var(--gray-dark);
+  background-color: var(--white);
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 

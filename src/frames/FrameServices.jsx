@@ -33,24 +33,23 @@ function FrameServices() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=300vh',
+        end: '+=500vh',
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     })
 
-    // --- Service 1: Interiorismo — inset clip-path reveal ---
+    // --- Service 1: Interiorismo (0s - 18s) ---
     tl.fromTo('.frame-services__image--interiorismo', {
       clipPath: 'inset(50% 50% 50% 50%)',
       scale: 1.3,
     }, {
       clipPath: 'inset(0% 0% 0% 0%)',
       scale: 1,
-      duration: 0.35,
+      duration: 10,
       ease: 'power3.inOut',
     }, 0)
 
-    // Title countermotion from right
     tl.fromTo('.frame-services__title--interiorismo', {
       xPercent: 60,
       opacity: 0,
@@ -59,41 +58,39 @@ function FrameServices() {
       xPercent: 0,
       opacity: 1,
       filter: 'blur(0px)',
-      duration: 0.25,
+      duration: 8,
       ease: 'power2.out',
-    }, 0.08)
+    }, 3)
 
-    // Description fade up
     tl.fromTo('.frame-services__desc--interiorismo', {
       y: 40,
       opacity: 0,
     }, {
       y: 0,
       opacity: 1,
-      duration: 0.2,
+      duration: 6,
       ease: 'power2.out',
-    }, 0.15)
+    }, 7)
 
     // Interiorismo exit
     tl.to('.frame-services__panel--interiorismo', {
       opacity: 0,
       y: -60,
-      duration: 0.1,
+      duration: 4,
       ease: 'power2.in',
-    }, 0.42)
+    }, 16)
 
-    // --- Service 2: Mobiliario — circle clip-path reveal ---
+    // --- Service 2: Mobiliario (20s - 38s) ---
     tl.fromTo('.frame-services__image--mobiliario', {
       clipPath: 'circle(0% at 50% 50%)',
       scale: 1.2,
     }, {
       clipPath: 'circle(75% at 50% 50%)',
       scale: 1,
-      duration: 0.35,
+      duration: 10,
       ease: 'power2.inOut',
-    }, 0.48)
+    }, 20)
 
-    // Title countermotion from left
     tl.fromTo('.frame-services__title--mobiliario', {
       xPercent: -60,
       opacity: 0,
@@ -102,28 +99,27 @@ function FrameServices() {
       xPercent: 0,
       opacity: 1,
       filter: 'blur(0px)',
-      duration: 0.25,
+      duration: 8,
       ease: 'power2.out',
-    }, 0.55)
+    }, 23)
 
-    // Description fade up
     tl.fromTo('.frame-services__desc--mobiliario', {
       y: 40,
       opacity: 0,
     }, {
       y: 0,
       opacity: 1,
-      duration: 0.2,
+      duration: 6,
       ease: 'power2.out',
-    }, 0.62)
+    }, 27)
 
     // Final exit
     tl.to('.frame-services__inner', {
       scale: 0.95,
       opacity: 0,
-      duration: 0.1,
+      duration: 4,
       ease: 'power2.in',
-    }, 0.92)
+    }, 36)
 
   }, { scope: containerRef })
 

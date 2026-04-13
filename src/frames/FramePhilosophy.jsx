@@ -27,57 +27,44 @@ function FramePhilosophy() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=250vh',
+        end: '+=300vh',
         pin: true,
-        scrub: 1.2,
+        pinSpacing: true,
+        scrub: true,
       }
     })
 
-    // X Logo frame-by-frame tied to scroll (0% - 15%)
+    // X Logo frame-by-frame (0% - 40%)
     const frames = gsap.utils.toArray('.frame-philosophy__logo-frame')
     frames.forEach((frame, i) => {
       if (i === 0) {
-        // First frame starts visible, fades out
-        tl.to(frame, { opacity: 0, duration: 0.03 }, 0.03)
+        tl.to(frame, { opacity: 0, duration: 0.08 }, 0.08)
       } else {
-        // Each subsequent frame fades in then out
-        const startPos = (i / frames.length) * 0.15
-        tl.fromTo(frame,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.02 },
-          startPos
-        )
+        const pos = (i / frames.length) * 0.40
+        tl.fromTo(frame, { opacity: 0 }, { opacity: 1, duration: 0.08 }, pos)
         if (i < frames.length - 1) {
-          tl.to(frame, { opacity: 0, duration: 0.02 }, startPos + 0.03)
+          tl.to(frame, { opacity: 0, duration: 0.06 }, pos + 0.09)
         }
       }
     })
 
-    // Word-by-word reveal (20% - 80%)
+    // Word-by-word reveal — fill 40% to 100%
     const words = gsap.utils.toArray('.frame-philosophy__word-inner')
+    const wordCount = words.length
+    const perWord = 0.58 / wordCount
+
     words.forEach((word, i) => {
       tl.fromTo(word,
-        {
-          yPercent: 120,
-          opacity: 0,
-        },
+        { yPercent: 120, opacity: 0 },
         {
           yPercent: 0,
           opacity: 1,
-          duration: 0.08,
+          duration: perWord,
           ease: 'power2.out',
         },
-        0.20 + i * 0.085
+        0.40 + i * perWord
       )
     })
-
-    // Section fade out (85% - 100%)
-    tl.to('.frame-philosophy__content', {
-      opacity: 0,
-      y: -60,
-      duration: 0.15,
-      ease: 'power2.in',
-    }, 0.85)
 
   }, { scope: containerRef })
 

@@ -47,7 +47,18 @@ function ScrollExperience() {
   }, [])
 
   return (
-    <ReactLenis root options={{ autoRaf: false }} ref={lenisRef}>
+    <ReactLenis
+      root
+      options={{
+        autoRaf: false,
+        duration: 1.8,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        wheelMultiplier: 0.5,
+        touchMultiplier: 1.5,
+        smoothWheel: true,
+      }}
+      ref={lenisRef}
+    >
       <Navbar />
       <div className="scroll-experience">
         <FrameHero />

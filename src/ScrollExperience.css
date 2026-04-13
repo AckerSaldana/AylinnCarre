@@ -1,4 +1,11 @@
 .scroll-experience {
   position: relative;
   width: 100%;
+  background: var(--beige);
+}
+
+/* GSAP wraps pinned elements in .pin-spacer divs —
+   force beige bg so the dark hero doesn't bleed through */
+.pin-spacer {
+  background: var(--beige) !important;
 }

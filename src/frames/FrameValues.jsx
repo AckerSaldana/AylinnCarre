@@ -18,162 +18,122 @@ function FrameValues() {
         start: 'top top',
         end: '+=250vh',
         pin: true,
-        scrub: 1.2,
+        scrub: true,
       }
     })
 
-    // --- Phase 1: Mission (0% - 30%) ---
+    // --- Phase 1: Mission (0% - 32%) ---
+    tl.to(containerRef.current, {
+      backgroundColor: '#4A1218',
+      duration: 0.20,
+      ease: 'power1.inOut',
+    }, 0)
+
+    tl.to('.frame-values__mission', {
+      color: '#FFFAF7',
+      duration: 0.12,
+    }, 0.03)
+
     tl.fromTo('.frame-values__mission-title', {
-      y: 60,
-      opacity: 0,
+      y: 60, opacity: 0,
     }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.1,
+      y: 0, opacity: 1,
+      duration: 0.15,
       ease: 'power3.out',
     }, 0.02)
 
     tl.fromTo('.frame-values__mission-text', {
-      y: 40,
-      opacity: 0,
+      y: 40, opacity: 0,
     }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.12,
-      ease: 'power2.out',
-    }, 0.08)
-
-    // Background darkens
-    tl.to(containerRef.current, {
-      backgroundColor: '#4A1218',
-      duration: 0.25,
-      ease: 'power1.inOut',
-    }, 0)
-
-    // Text shifts to light on dark background
-    tl.to('.frame-values__mission', {
-      color: '#FFFAF7',
+      y: 0, opacity: 1,
       duration: 0.15,
-    }, 0.05)
+      ease: 'power2.out',
+    }, 0.10)
 
-    // Mission exit (35% - 40%)
+    // Mission exit
     tl.to('.frame-values__mission', {
-      opacity: 0,
-      y: -40,
+      opacity: 0, y: -40,
       duration: 0.08,
       ease: 'power2.in',
-    }, 0.33)
+    }, 0.30)
 
-    // --- Phase 2: Vision (40% - 65%) ---
+    // --- Phase 2: Vision (38% - 60%) ---
+    tl.to('.frame-values__vision', {
+      color: '#FFFAF7',
+      duration: 0.01,
+    }, 0.38)
+
     tl.fromTo('.frame-values__vision-title', {
-      y: 60,
-      opacity: 0,
+      y: 60, opacity: 0,
     }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.1,
+      y: 0, opacity: 1,
+      duration: 0.15,
       ease: 'power3.out',
-    }, 0.40)
+    }, 0.38)
 
     tl.fromTo('.frame-values__vision-text', {
-      y: 40,
-      opacity: 0,
+      y: 40, opacity: 0,
     }, {
-      y: 0,
-      opacity: 1,
-      duration: 0.12,
+      y: 0, opacity: 1,
+      duration: 0.15,
       ease: 'power2.out',
     }, 0.46)
 
     tl.to('.frame-values__vision', {
-      color: '#FFFAF7',
-      duration: 0.01,
-    }, 0.40)
-
-    // Vision exit
-    tl.to('.frame-values__vision', {
-      opacity: 0,
-      y: -40,
+      opacity: 0, y: -40,
       duration: 0.08,
       ease: 'power2.in',
-    }, 0.63)
+    }, 0.60)
 
-    // --- Phase 3: Values credo (70% - 100%) ---
-    // Background returns to beige
+    // --- Phase 3: Values credo (65% - 100%) ---
     tl.to(containerRef.current, {
       backgroundColor: '#FFFAF7',
-      duration: 0.15,
+      duration: 0.12,
       ease: 'power1.inOut',
+    }, 0.65)
+
+    // Humanos
+    tl.fromTo('.frame-values__credo-word--1', {
+      opacity: 0, scale: 0.6, yPercent: 30, filter: 'blur(8px)',
+    }, {
+      opacity: 1, scale: 1, yPercent: 0, filter: 'blur(0px)',
+      duration: 0.10,
+      ease: 'power3.out',
     }, 0.68)
 
-    // Word 1: Humanos
-    tl.fromTo('.frame-values__credo-word--1', {
-      opacity: 0,
-      scale: 0.6,
-      yPercent: 30,
-      filter: 'blur(8px)',
-    }, {
-      opacity: 1,
-      scale: 1,
-      yPercent: 0,
-      filter: 'blur(0px)',
-      duration: 0.08,
-      ease: 'power3.out',
-    }, 0.72)
-
-    // Plus 1
+    // +
     tl.fromTo('.frame-values__credo-plus--1', {
-      opacity: 0,
-      scale: 0.3,
-      rotation: -90,
+      opacity: 0, scale: 0.3, rotation: -90,
     }, {
-      opacity: 1,
-      scale: 1,
-      rotation: 0,
-      duration: 0.05,
+      opacity: 1, scale: 1, rotation: 0,
+      duration: 0.06,
       ease: 'back.out(2)',
-    }, 0.80)
+    }, 0.78)
 
-    // Word 2: Innovadores
+    // Innovadores
     tl.fromTo('.frame-values__credo-word--2', {
-      opacity: 0,
-      scale: 0.6,
-      yPercent: 30,
-      filter: 'blur(8px)',
+      opacity: 0, scale: 0.6, yPercent: 30, filter: 'blur(8px)',
     }, {
-      opacity: 1,
-      scale: 1,
-      yPercent: 0,
-      filter: 'blur(0px)',
-      duration: 0.08,
+      opacity: 1, scale: 1, yPercent: 0, filter: 'blur(0px)',
+      duration: 0.10,
       ease: 'power3.out',
-    }, 0.83)
+    }, 0.82)
 
-    // Plus 2
+    // +
     tl.fromTo('.frame-values__credo-plus--2', {
-      opacity: 0,
-      scale: 0.3,
-      rotation: -90,
+      opacity: 0, scale: 0.3, rotation: -90,
     }, {
-      opacity: 1,
-      scale: 1,
-      rotation: 0,
-      duration: 0.05,
+      opacity: 1, scale: 1, rotation: 0,
+      duration: 0.06,
       ease: 'back.out(2)',
-    }, 0.89)
+    }, 0.90)
 
-    // Word 3: Conscientes
+    // Conscientes
     tl.fromTo('.frame-values__credo-word--3', {
-      opacity: 0,
-      scale: 0.6,
-      yPercent: 30,
-      filter: 'blur(8px)',
+      opacity: 0, scale: 0.6, yPercent: 30, filter: 'blur(8px)',
     }, {
-      opacity: 1,
-      scale: 1,
-      yPercent: 0,
-      filter: 'blur(0px)',
-      duration: 0.08,
+      opacity: 1, scale: 1, yPercent: 0, filter: 'blur(0px)',
+      duration: 0.10,
       ease: 'power3.out',
     }, 0.92)
 

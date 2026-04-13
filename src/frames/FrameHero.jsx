@@ -45,17 +45,20 @@ function FrameHero() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=150vh',
+        end: '+=100vh',
         pin: true,
-        scrub: 0.8,
+        scrub: true,
         anticipatePin: 1,
       }
     })
 
-    // Layer 1: Background — moves slow = depth
-    tl.to('.frame-hero__bg', {
-      yPercent: 30,
-      scale: 1.15,
+    // Layer 1: Background — starts shifted up to hide dark top edge of image
+    tl.fromTo('.frame-hero__bg', {
+      yPercent: -8,
+      scale: 1,
+    }, {
+      yPercent: 10,
+      scale: 1.1,
       ease: 'none',
     }, 0)
 
@@ -73,13 +76,20 @@ function FrameHero() {
     }, 0)
 
     // Layer 4: Logo zoom-through dissolve
-    tl.to('.frame-hero__logo', {
+    // Must use fromTo — at mount time the CSS has opacity:0 for the entrance animation,
+    // and GSAP would record that as the starting value if we used .to()
+    tl.fromTo('.frame-hero__logo', {
+      scale: 1,
+      opacity: 1,
+      filter: 'blur(0px)',
+      yPercent: 0,
+    }, {
       scale: 1.8,
       opacity: 0,
       filter: 'blur(12px)',
       yPercent: -15,
       ease: 'power2.in',
-    }, 0)
+    }, 0.15)
 
     // Layer 5: Overlay darkens for transition to next frame
     tl.to('.frame-hero__overlay', {

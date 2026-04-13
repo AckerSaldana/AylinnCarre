@@ -13,9 +13,9 @@
 /* --- Background image layer --- */
 .frame-hero__bg {
   position: absolute;
-  inset: -5%;
-  width: 110%;
-  height: 110%;
+  inset: -20%;
+  width: 140%;
+  height: 140%;
   will-change: transform;
 }
 
@@ -23,6 +23,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 45%;
 }
 
 /* --- Dark overlay --- */
@@ -91,20 +92,6 @@
   width: min(850px, 75vw);
   height: auto;
   will-change: transform, opacity, filter;
-  /* Entrance state */
-  opacity: 0;
-  transform: scale(0.95);
-  filter: blur(6px);
-  transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
-              transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
-              filter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
-}
-
-/* Entrance animation — triggered by React state */
-.frame-hero--loaded .frame-hero__logo {
-  opacity: 1;
-  transform: scale(1);
-  filter: blur(0px);
 }
 
 /* --- Scroll indicator --- */

@@ -25,8 +25,8 @@
 /* --- X Logo frame sequence --- */
 .frame-philosophy__xlogo {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: clamp(120px, 20vw, 220px);
+  height: clamp(120px, 20vw, 220px);
 }
 
 .frame-philosophy__logo-frame {

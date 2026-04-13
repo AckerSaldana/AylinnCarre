@@ -1,119 +1,174 @@
 /* ============================================
-   FRAME 6: TEAM — Sticky stacking cards
+   FRAME 6: TEAM — Pinned split-screen reveals
    ============================================ */
 
 .frame-team {
   position: relative;
   width: 100%;
+  height: 100vh;
   background: var(--beige);
-  padding: 10vh 0 20vh;
+  overflow: hidden;
+  z-index: 2;
 }
 
-.frame-team__header {
-  text-align: center;
-  padding: 0 24px 8vh;
-}
-
+/* --- Section title (centered, fades out) --- */
 .frame-team__title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-heading);
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
   color: var(--gold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 400;
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform, opacity, filter;
 }
 
-/* --- Stacking area --- */
-.frame-team__stack {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 0 24px;
+/* --- Panel: each team member occupies full viewport --- */
+.frame-team__panel {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 6vw, 80px);
+  padding: 0 clamp(40px, 8vw, 120px);
+  opacity: 0;
+  will-change: opacity, transform;
 }
 
-/* --- Individual card (sticky stacking) --- */
-.frame-team__card {
-  position: sticky;
-  top: calc(10vh + var(--card-index) * 4vh);
-  width: 100%;
-  background: var(--beige-dark);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 40vh;
-  will-change: transform, filter;
-  transform-origin: center top;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+/* Reverse layout for alternating members */
+.frame-team__panel--reverse {
+  direction: rtl;
 }
 
-.frame-team__card:last-child {
-  margin-bottom: 0;
+.frame-team__panel--reverse > * {
+  direction: ltr;
 }
 
-/* --- Photo --- */
+/* --- Photo side --- */
+.frame-team__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 8vh 0;
+}
+
 .frame-team__photo {
-  position: relative;
   width: 100%;
+  max-width: 440px;
   aspect-ratio: 3 / 4;
   overflow: hidden;
+  border-radius: 6px;
+  will-change: clip-path, transform;
 }
 
 .frame-team__photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
 }
 
-/* --- Info overlay --- */
+/* --- Info side --- */
 .frame-team__info {
-  padding: 28px 32px;
-  will-change: transform, opacity;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding: 0 clamp(0px, 2vw, 20px);
+}
+
+.frame-team__name-wrap {
+  overflow: hidden;
+  margin-bottom: 6px;
 }
 
 .frame-team__name {
   font-family: var(--font-heading);
-  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 500;
   color: var(--gray-dark);
-  margin-bottom: 4px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  will-change: transform, opacity, filter;
+}
+
+.frame-team__details {
+  margin-bottom: 16px;
+  will-change: transform, opacity;
 }
 
 .frame-team__role {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
   color: var(--gray-medium);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-style: italic;
 }
 
 .frame-team__focus {
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: clamp(0.85rem, 1.1vw, 1rem);
   color: var(--terracota);
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.6;
 }
 
-.frame-team__instagram {
+.frame-team__ig {
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: clamp(0.8rem, 0.95vw, 0.9rem);
   color: var(--gold);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  will-change: opacity;
 }
 
-/* --- Mobile --- */
+/* --- Mobile: stacked layout --- */
 @media (max-width: 768px) {
-  .frame-team__card {
-    margin-bottom: 30vh;
+  .frame-team__panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    padding: 10vh 24px 6vh;
+    gap: 20px;
+  }
+
+  .frame-team__panel--reverse {
+    direction: ltr;
+  }
+
+  .frame-team__visual {
+    padding: 0;
+  }
+
+  .frame-team__photo {
+    max-width: 280px;
+    margin: 0 auto;
   }
 
   .frame-team__info {
-    padding: 20px 24px;
+    text-align: center;
+    align-items: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .frame-team__card {
-    position: relative;
-    top: 0 !important;
-    margin-bottom: 24px;
+  .frame-team__panel {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .frame-team__photo {
+    clip-path: none !important;
+    transform: none !important;
+  }
+  .frame-team__name,
+  .frame-team__details,
+  .frame-team__ig {
+    opacity: 1 !important;
     transform: none !important;
     filter: none !important;
   }

@@ -20,9 +20,9 @@ function FrameContact() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=200vh',
+        end: '+=180vh',
         pin: true,
-        scrub: 1,
+        scrub: true,
       }
     })
 
@@ -35,38 +35,41 @@ function FrameContact() {
       ease: 'power1.inOut',
     }, 0)
 
-    // CTA word-by-word reveal (0% - 30%)
+    // CTA word-by-word reveal — spread evenly across 5%-50%
     const ctaWordEls = gsap.utils.toArray('.frame-contact__cta-word')
+    const ctaSpacing = 0.42 / ctaWordEls.length
     ctaWordEls.forEach((word, i) => {
       tl.fromTo(word,
         { yPercent: 110, opacity: 0 },
         {
           yPercent: 0,
           opacity: 1,
-          duration: 0.04,
+          duration: ctaSpacing * 0.7,
           ease: 'power2.out',
         },
-        0.03 + i * 0.02
+        0.05 + i * ctaSpacing
       )
     })
 
-    // Subtitle reveal (30% - 50%)
+    // Subtitle reveal — spread across 50%-72%
     const subWordEls = gsap.utils.toArray('.frame-contact__sub-word')
+    const subSpacing = 0.20 / subWordEls.length
     subWordEls.forEach((word, i) => {
       tl.fromTo(word,
         { yPercent: 110, opacity: 0 },
         {
           yPercent: 0,
           opacity: 1,
-          duration: 0.04,
+          duration: subSpacing * 0.7,
           ease: 'power2.out',
         },
-        0.32 + i * 0.015
+        0.52 + i * subSpacing
       )
     })
 
-    // Contact items cascade (50% - 75%)
+    // Contact items cascade (73% - 92%)
     const items = gsap.utils.toArray('.frame-contact__item')
+    const itemSpacing = 0.18 / items.length
     items.forEach((item, i) => {
       tl.fromTo(item,
         { yPercent: 60, opacity: 0, filter: 'blur(4px)' },
@@ -74,21 +77,21 @@ function FrameContact() {
           yPercent: 0,
           opacity: 1,
           filter: 'blur(0px)',
-          duration: 0.06,
+          duration: itemSpacing * 0.8,
           ease: 'power3.out',
         },
-        0.52 + i * 0.03
+        0.73 + i * itemSpacing
       )
     })
 
-    // Footer fade in (75% - 100%)
+    // Footer fade in (92% - 100%)
     tl.fromTo('.frame-contact__footer', {
       opacity: 0,
     }, {
       opacity: 1,
-      duration: 0.15,
+      duration: 0.08,
       ease: 'power2.out',
-    }, 0.80)
+    }, 0.92)
 
   }, { scope: containerRef })
 

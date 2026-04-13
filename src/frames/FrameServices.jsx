@@ -113,13 +113,6 @@ function FrameServices() {
       ease: 'power2.out',
     }, 27)
 
-    // Final exit
-    tl.to('.frame-services__inner', {
-      scale: 0.95,
-      opacity: 0,
-      duration: 4,
-      ease: 'power2.in',
-    }, 36)
 
   }, { scope: containerRef })
 

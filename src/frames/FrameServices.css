@@ -62,7 +62,10 @@
 .frame-services__text {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 20px;
+  justify-self: center;
 }
 
 .frame-services__title {

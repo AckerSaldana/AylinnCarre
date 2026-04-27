@@ -297,10 +297,15 @@
   height: 100%;
   object-fit: contain;
   opacity: 0;
+  /* Transition kicks in only when no keyframe animation is running (i.e. on
+     the handover between cycles). Smooths the snap from frame 5 (animation's
+     forwards-fill end) back to frame 1 (resting state) during the pause. */
+  transition: opacity 0.4s ease;
 }
 
-/* Default resting state: show final frame */
-.xlogo__frame--5 {
+/* Default resting state: show first frame so it's always loaded and visible
+   before the sequence starts — the animation literally begins at frame 1. */
+.xlogo__frame--1 {
   opacity: 1;
 }
 

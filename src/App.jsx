@@ -1,19 +1,10 @@
-import { Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { Outlet, ScrollRestoration } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
-
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
-  return null
-}
 
 function App() {
   return (
     <div className="app">
-      <ScrollToTop />
+      <ScrollRestoration />
       <Navbar />
       <main>
         <Outlet />

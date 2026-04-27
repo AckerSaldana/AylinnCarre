@@ -1,7 +1,3 @@
-html {
-  scroll-behavior: smooth;
-}
-
 :root {
   /* Paleta de colores XYRIN */
   --burgundy: #6B1C23;
@@ -128,14 +124,17 @@ ul {
   isolation: auto;
 }
 
-/* The morphing image stays solid — short cross-fade just bridges old→new
-   so it reads as one continuous object travelling. */
+/* The morphing image cross-fades over the same window as the group's size /
+   position morph (800ms) and with the same easing, so old↔new content blends
+   gradually instead of "flicking" partway through. mix-blend-mode plus-lighter
+   (the UA default for these pseudos) keeps the combined opacity at 100%
+   throughout the fade. */
 ::view-transition-old(*) {
-  animation: 180ms cubic-bezier(0.4, 0, 0.6, 1) both vt-fade-out;
+  animation: 800ms cubic-bezier(0.5, 0, 0.1, 1) both vt-fade-out;
 }
 
 ::view-transition-new(*) {
-  animation: 220ms cubic-bezier(0.4, 0, 0.6, 1) 90ms both vt-fade-in;
+  animation: 800ms cubic-bezier(0.5, 0, 0.1, 1) both vt-fade-in;
 }
 
 @keyframes vt-fade-out {
@@ -148,25 +147,22 @@ ul {
   to   { opacity: 1; }
 }
 
-/* Page-level chrome (root): smooth cross-fade. The new chrome starts coming
-   back ~halfway through the morph so the image has solo time, but it isn't
-   left holding too long. No blur — it was mushy. */
+/* Page-level chrome (root): no animation — the new page is opaque from the
+   start and the old page is hidden immediately, so only the morphing image
+   actually animates. Earlier versions cross-faded the root, which exposed
+   two artifacts:
+     - A staged out→in created a blank gap where unmorphed content flickered.
+     - A simultaneous fade left both snapshots semi-transparent, letting the
+       underlying document peek through and read like a scroll jump as
+       ScrollRestoration moved the real scroll position. */
 ::view-transition-old(root) {
-  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both vt-root-out;
+  animation: none;
+  opacity: 0;
 }
 
 ::view-transition-new(root) {
-  animation: 380ms cubic-bezier(0.4, 0, 0.2, 1) 380ms both vt-root-in;
-}
-
-@keyframes vt-root-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-
-@keyframes vt-root-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  animation: none;
+  opacity: 1;
 }
 
 /* Persistent navbar: skip the transition entirely. The navbar is identical on

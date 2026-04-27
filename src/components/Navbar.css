@@ -9,6 +9,14 @@
   view-transition-name: site-navbar;
 }
 
+/* Inside the view-transition layer, groups stack in DOM order by default,
+   which would put the project image groups above the navbar group during a
+   morph. Force the navbar group above any other named group so list images
+   that overlap the navbar's vertical band don't briefly cover it. */
+::view-transition-group(site-navbar) {
+  z-index: 10;
+}
+
 .navbar__inner {
   width: 100%;
   padding: 16px 48px;

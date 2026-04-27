@@ -94,6 +94,12 @@ function ProjectDetail() {
     return () => clearTimeout(t)
   }, [revealReady])
 
+  // Remember the slug so Portafolio can mark the right card as the morph
+  // target on back-navigation (covers the case of arriving directly via URL).
+  useEffect(() => {
+    sessionStorage.setItem('lastProjectSlug', slug)
+  }, [slug])
+
   // Scroll-triggered reveals — observers are armed but their visibility flag
   // only flips once revealReady is true (so the morph plays solo)
   useEffect(() => {

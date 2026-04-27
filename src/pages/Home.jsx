@@ -35,15 +35,24 @@ function Home() {
     return () => obs.disconnect()
   }, [])
 
-  // Repeating logo animation: play → pause 6s → replay
+  // Repeating logo animation: play → pause → replay.
+  // Hold the first play until the .xlogo container has finished its 0.6s-delay
+  // fade-in (CSS transition 0.8s ease 0.6s), otherwise frame 1 plays while the
+  // container is still at opacity 0 and the sequence appears to start at frame 2.
   useEffect(() => {
     if (!pillarsVisible) return
-    setLogoPlaying(true)
-    const id = setInterval(() => {
-      setLogoPlaying(false)
-      requestAnimationFrame(() => requestAnimationFrame(() => setLogoPlaying(true)))
-    }, 2500 + 6000)
-    return () => clearInterval(id)
+    let intervalId
+    const startId = setTimeout(() => {
+      setLogoPlaying(true)
+      intervalId = setInterval(() => {
+        setLogoPlaying(false)
+        requestAnimationFrame(() => requestAnimationFrame(() => setLogoPlaying(true)))
+      }, 2500 + 2500)
+    }, 1200)
+    return () => {
+      clearTimeout(startId)
+      clearInterval(intervalId)
+    }
   }, [pillarsVisible])
 
   // Subtle mouse-driven parallax on hero layers

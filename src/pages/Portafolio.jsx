@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { flushSync } from 'react-dom'
+import { Link, useNavigationType } from 'react-router-dom'
 import './Portafolio.css'
 
 const projects = [
@@ -29,6 +31,26 @@ const projects = [
 ]
 
 function Portafolio() {
+  const navType = useNavigationType()
+  // Only one project image gets a viewTransitionName at a time so the others
+  // stay in the root snapshot and don't fade in individually during the morph.
+  // On POP (back from a project), use the slug stored by ProjectDetail.
+  const [activeSlug, setActiveSlug] = useState(() => {
+    if (typeof window === 'undefined') return null
+    if (navType === 'POP') {
+      return sessionStorage.getItem('lastProjectSlug')
+    }
+    return null
+  })
+
+  const handleProjectClick = (slug) => {
+    sessionStorage.setItem('lastProjectSlug', slug)
+    // Sync DOM update so the OLD view-transition snapshot only carries the
+    // viewTransitionName on the clicked card, before React Router starts
+    // the transition on its own click handler.
+    flushSync(() => setActiveSlug(slug))
+  }
+
   return (
     <div className="portafolio">
       <div className="container">
@@ -36,7 +58,8 @@ function Portafolio() {
 
         <div className="portafolio__grid">
           {projects.map((project, index) => {
-            const morphName = project.slug ? `project-img-${project.slug}` : undefined
+            const isActive = project.slug && project.slug === activeSlug
+            const morphName = isActive ? `project-img-${project.slug}` : undefined
             const card = (
               <article className="portafolio__project">
                 <div className="portafolio__image">
@@ -59,6 +82,7 @@ function Portafolio() {
                     to={`/portafolio/${project.slug}`}
                     className="portafolio__link"
                     viewTransition
+                    onClick={() => handleProjectClick(project.slug)}
                   >
                     {card}
                   </Link>

@@ -31,7 +31,7 @@ function FramePortfolio() {
       scrollTrigger: {
         trigger: sectionRef.current,
         start: 'top top',
-        end: () => `+=${scrollDistance}`,
+        end: () => `+=${scrollDistance * 1.6}`,
         pin: true,
         scrub: 1,
         anticipatePin: 1,

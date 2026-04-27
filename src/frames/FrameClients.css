@@ -43,7 +43,7 @@
 }
 
 .frame-clients__logo {
-  height: clamp(30px, 4vw, 50px);
+  height: clamp(70px, 9vw, 130px);
   width: auto;
   object-fit: contain;
   filter: grayscale(100%) opacity(0.5);
@@ -61,7 +61,7 @@
   }
 
   .frame-clients__logo {
-    height: 25px;
+    height: 60px;
   }
 }
 

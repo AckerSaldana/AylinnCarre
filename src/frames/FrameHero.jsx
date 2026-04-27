@@ -45,7 +45,7 @@ function FrameHero() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=100vh',
+        end: '+=200vh',
         pin: true,
         scrub: true,
         anticipatePin: 1,

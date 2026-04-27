@@ -20,7 +20,7 @@ function FrameContact() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=180vh',
+        end: '+=320vh',
         pin: true,
         scrub: true,
       }

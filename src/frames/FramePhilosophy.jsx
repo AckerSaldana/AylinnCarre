@@ -27,7 +27,7 @@ function FramePhilosophy() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=300vh',
+        end: '+=500vh',
         pin: true,
         pinSpacing: true,
         scrub: true,

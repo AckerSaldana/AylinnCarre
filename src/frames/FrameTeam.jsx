@@ -53,7 +53,7 @@ function FrameTeam() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=500vh',
+        end: '+=850vh',
         pin: true,
         scrub: true,
       }

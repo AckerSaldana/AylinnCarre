@@ -16,7 +16,7 @@ function FrameValues() {
       scrollTrigger: {
         trigger: containerRef.current,
         start: 'top top',
-        end: '+=180vh',
+        end: '+=540vh',
         pin: true,
         scrub: true,
       }

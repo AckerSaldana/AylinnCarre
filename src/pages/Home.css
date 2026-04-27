@@ -6,7 +6,10 @@
 
 .hero {
   position: relative;
-  min-height: 75vh;
+  /* Fill the viewport below the sticky navbar so the hero is the only thing
+     visible on landing — anything below requires scrolling. */
+  min-height: calc(100vh - 70px);
+  min-height: calc(100dvh - 70px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,7 +374,8 @@
 
 @media (max-width: 768px) {
   .hero {
-    min-height: 60vh;
+    min-height: calc(100vh - 70px);
+    min-height: calc(100dvh - 70px);
   }
 
   .hero__content {

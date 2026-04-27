@@ -4,10 +4,10 @@ import './Home.css'
 function Home() {
   const [loaded, setLoaded] = useState(false)
   const [settled, setSettled] = useState(false)
-  const [taglineVisible, setTaglineVisible] = useState(false)
+  const [pillarsVisible, setPillarsVisible] = useState(false)
   const [logoPlaying, setLogoPlaying] = useState(false)
   const heroRef = useRef(null)
-  const taglineRef = useRef(null)
+  const pillarsRef = useRef(null)
 
   // Staggered entrance animation
   useEffect(() => {
@@ -18,14 +18,14 @@ function Home() {
     return () => clearTimeout(t)
   }, [])
 
-  // Scroll-triggered tagline reveal
+  // Scroll-triggered pillars reveal
   useEffect(() => {
-    const el = taglineRef.current
+    const el = pillarsRef.current
     if (!el) return
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTaglineVisible(true)
+          setPillarsVisible(true)
           obs.disconnect()
         }
       },
@@ -37,14 +37,14 @@ function Home() {
 
   // Repeating logo animation: play → pause 6s → replay
   useEffect(() => {
-    if (!taglineVisible) return
+    if (!pillarsVisible) return
     setLogoPlaying(true)
     const id = setInterval(() => {
       setLogoPlaying(false)
       requestAnimationFrame(() => requestAnimationFrame(() => setLogoPlaying(true)))
     }, 2500 + 6000)
     return () => clearInterval(id)
-  }, [taglineVisible])
+  }, [pillarsVisible])
 
   // Subtle mouse-driven parallax on hero layers
   useEffect(() => {
@@ -77,14 +77,25 @@ function Home() {
           <h1 className="hero__title">
             <img className="hero__logo" src="/logoxiryn.png" alt="XYRIN" />
           </h1>
+          <p className="hero__tagline">
+            {['Convertimos', 'conceptos', 'en', 'experiencias'].map((word, i) => (
+              <span key={i} className="hero__tagline-word" style={{ '--w': i }}>
+                {word}
+              </span>
+            ))}
+          </p>
         </div>
       </section>
 
       <section
-        ref={taglineRef}
-        className={`tagline${taglineVisible ? ' tagline--visible' : ''}`}
+        ref={pillarsRef}
+        className={`pillars${pillarsVisible ? ' pillars--visible' : ''}`}
       >
-        <div className="tagline__content">
+        <div className="pillars__content">
+          <p className="pillars__intro">
+            En <span className="pillars__brand">XYRIN</span> resolvemos problemas de organización, optimización y experiencia de usuario para hogares e industria restaurantera.
+          </p>
+
           <div className={`xlogo${logoPlaying ? ' xlogo--playing' : ''}`} aria-hidden="true">
             <img className="xlogo__frame xlogo__frame--1" src="/logo-frames/Default.svg" alt="" />
             <img className="xlogo__frame xlogo__frame--2" src="/logo-frames/Variant2.svg" alt="" />
@@ -93,13 +104,14 @@ function Home() {
             <img className="xlogo__frame xlogo__frame--5" src="/logo-frames/Variant5.svg" alt="" />
           </div>
 
-          <p className="tagline__text">
-            {['En', 'XYRIN', 'convertimos', 'conceptos', 'en', 'experiencias'].map((word, i) => (
-              <span key={i} className="tagline__word" style={{ '--w': i }}>
-                {word}
-              </span>
-            ))}
-          </p>
+          <div className="pillars__list-wrap">
+            <h2 className="pillars__heading">Nos enfocamos en tres pilares de solución:</h2>
+            <ul className="pillars__list">
+              <li style={{ '--p': 0 }}>Organización de elementos funcionales.</li>
+              <li style={{ '--p': 1 }}>Optimización de espacios.</li>
+              <li style={{ '--p': 2 }}>Experiencia de usuario.</li>
+            </ul>
+          </div>
         </div>
       </section>
     </div>

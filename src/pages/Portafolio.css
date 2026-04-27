@@ -23,6 +23,12 @@
   width: 100%;
 }
 
+.portafolio__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 .portafolio__image {
   position: relative;
   width: 100%;

@@ -105,3 +105,84 @@ ul {
 .app main {
   flex: 1;
 }
+
+/* ================================================
+   View Transitions — shared element morph (cinematic, soft)
+   ================================================ */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* Morph: 800ms with a soft, balanced easing — gentle start, smooth landing.
+   cubic-bezier(0.5, 0, 0.1, 1) gives a luxury "lift and settle" feel
+   without sharp acceleration. */
+::view-transition-group(*) {
+  animation-duration: 800ms;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.1, 1);
+}
+
+::view-transition-image-pair(*) {
+  animation-duration: 800ms;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.1, 1);
+  isolation: auto;
+}
+
+/* The morphing image stays solid — short cross-fade just bridges old→new
+   so it reads as one continuous object travelling. */
+::view-transition-old(*) {
+  animation: 180ms cubic-bezier(0.4, 0, 0.6, 1) both vt-fade-out;
+}
+
+::view-transition-new(*) {
+  animation: 220ms cubic-bezier(0.4, 0, 0.6, 1) 90ms both vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Page-level chrome (root): smooth cross-fade. The new chrome starts coming
+   back ~halfway through the morph so the image has solo time, but it isn't
+   left holding too long. No blur — it was mushy. */
+::view-transition-old(root) {
+  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both vt-root-out;
+}
+
+::view-transition-new(root) {
+  animation: 380ms cubic-bezier(0.4, 0, 0.2, 1) 380ms both vt-root-in;
+}
+
+@keyframes vt-root-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes vt-root-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Persistent navbar: skip the transition entirely. The navbar is identical on
+   every page, so cross-fading it would be a flicker for no reason. */
+::view-transition-group(site-navbar),
+::view-transition-image-pair(site-navbar),
+::view-transition-old(site-navbar),
+::view-transition-new(site-navbar) {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0ms !important;
+    animation-delay: 0ms !important;
+  }
+}

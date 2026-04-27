@@ -123,22 +123,153 @@
     filter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
 }
 
-/* ---------- Tagline (cinematic) ---------- */
+/* Hero tagline — under the XYRIN logo, word-by-word reveal */
+.hero__tagline {
+  margin: clamp(16px, 2vw, 28px) 0 0;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0 0.32em;
+  white-space: nowrap;
+}
 
-.tagline {
+.hero__tagline-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Empieza una vez que la PNG ya entró */
+  transition-delay: calc(1.05s + var(--w) * 0.12s);
+}
+
+.hero--loaded .hero__tagline-word {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* ---------- Pillars section (cinematic) ---------- */
+
+.pillars {
   background-color: var(--beige);
-  padding: 200px 24px 140px;
+  padding: clamp(80px, 12vw, 160px) 24px clamp(80px, 12vw, 140px);
   position: relative;
 }
 
-.tagline__content {
-  max-width: 700px;
+.pillars__content {
+  max-width: 960px;
   margin: 0 auto;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 110px;
+  gap: clamp(48px, 7vw, 96px);
+}
+
+.pillars__intro {
+  margin: 0;
+  max-width: 880px;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 25px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: #908986;
+  opacity: 0;
+  transform: translateY(20px);
+  filter: blur(4px);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+    filter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+
+.pillars__brand {
+  letter-spacing: 0.04em;
+}
+
+.pillars--visible .pillars__intro {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Reuse .xlogo from below; just sizes it down to fit between blocks */
+.pillars .xlogo {
+  width: 140px;
+  height: 140px;
+}
+
+.pillars__list-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+.pillars__heading {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #908986;
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(3px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s,
+    filter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s;
+}
+
+.pillars--visible .pillars__heading {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.pillars__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #DB8F83;
+}
+
+.pillars__list li {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(4px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(1.7s + var(--p) * 0.18s);
+}
+
+.pillars--visible .pillars__list li {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
 /* ---------- Animated X Logo (frame sequence) ---------- */
@@ -154,7 +285,7 @@
     transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
 }
 
-.tagline--visible .xlogo {
+.pillars--visible .xlogo {
   opacity: 1;
   transform: scale(1);
 }
@@ -231,39 +362,6 @@
   100% { opacity: 1; }
 }
 
-/* Tagline text — word-by-word cinematic reveal */
-.tagline__text {
-  font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
-  font-weight: 400;
-  color: #75443C;
-  line-height: 1;
-  letter-spacing: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 0 0.35em;
-  white-space: nowrap;
-}
-
-.tagline__word {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(20px);
-  filter: blur(4px);
-  transition:
-    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(1.8s + var(--w) * 0.12s);
-}
-
-.tagline--visible .tagline__word {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
-}
-
 /* ---------- Responsive ---------- */
 
 @media (max-width: 768px) {
@@ -275,8 +373,33 @@
     padding: 40px 16px;
   }
 
-  .tagline {
-    padding: 80px 16px;
+  .hero__tagline {
+    flex-wrap: wrap;
+    white-space: normal;
+    font-size: clamp(20px, 6vw, 28px);
+    gap: 0 0.28em;
+  }
+
+  .pillars {
+    padding: 64px 16px;
+  }
+
+  .pillars .xlogo {
+    width: 110px;
+    height: 110px;
+  }
+
+  .pillars__intro {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .pillars__heading {
+    font-size: 18px;
+  }
+
+  .pillars__list {
+    font-size: 20px;
   }
 }
 
@@ -320,7 +443,10 @@
     opacity: 1;
   }
 
-  .tagline__word {
+  .hero__tagline-word,
+  .pillars__intro,
+  .pillars__heading,
+  .pillars__list li {
     opacity: 1;
     transform: none;
     filter: none;

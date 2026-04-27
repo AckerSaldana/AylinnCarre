@@ -101,7 +101,7 @@ function Nosotros() {
         </div>
 
         <section className="team">
-          <h2 className="team__title">The team</h2>
+          <h2 className="team__title">Nosotras</h2>
           <div className="team__grid">
             {team.map((member) => (
               <div key={member.name} className="team__member">

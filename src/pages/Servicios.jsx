@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import './Servicios.css'
 
 const brandLogos = Array.from({ length: 17 }, (_, i) => `/brand-logos/logo-${i + 1}.png`)
@@ -25,15 +24,6 @@ const services = [
 ]
 
 function Servicios() {
-  const [currentLogo, setCurrentLogo] = useState(0)
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setCurrentLogo((prev) => (prev + 1) % brandLogos.length)
-    }, 1500)
-    return () => clearInterval(id)
-  }, [])
-
   return (
     <div className="servicios">
       <div className="container">
@@ -58,15 +48,21 @@ function Servicios() {
 
         <section className="clientes">
           <h2 className="clientes__title">Nuestros clientes</h2>
-          <div className="clientes__carousel">
-            {brandLogos.map((logo, i) => (
-              <img
-                key={i}
-                src={logo}
-                alt={`Cliente ${i + 1}`}
-                className={`clientes__carousel-logo${i === currentLogo ? ' clientes__carousel-logo--active' : ''}`}
-              />
-            ))}
+          <div className="clientes__marquee" aria-label="Marcas con las que trabajamos">
+            <ul className="clientes__track">
+              {[...brandLogos, ...brandLogos].map((logo, i) => {
+                const isClone = i >= brandLogos.length
+                return (
+                  <li
+                    key={i}
+                    className="clientes__item"
+                    aria-hidden={isClone ? 'true' : undefined}
+                  >
+                    <img src={logo} alt={isClone ? '' : `Cliente ${i + 1}`} />
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </section>
       </div>

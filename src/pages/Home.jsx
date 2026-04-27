@@ -7,18 +7,23 @@ const PILLARS_INTRO_WORDS = [
   'industria', 'restaurantera.',
 ]
 
+const HERO_TAGLINE_WORDS = ['Convertimos', 'conceptos', 'en', 'experiencias']
+
 function Home() {
   const [loaded, setLoaded] = useState(false)
   const [settled, setSettled] = useState(false)
+  const [pinnedMode, setPinnedMode] = useState(false)
   const [pillarsSettled, setPillarsSettled] = useState(false)
   const [logoPlaying, setLogoPlaying] = useState(false)
+
   const homeRef = useRef(null)
   const heroRef = useRef(null)
   const pillarsRef = useRef(null)
+  const actRef = useRef(null)
   const xframeRefs = useRef([])
   const settledRef = useRef(false)
 
-  // Staggered entrance animation
+  // Initial load entrance (logo + tagline fade-in on first paint)
   useEffect(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setLoaded(true))
@@ -27,62 +32,77 @@ function Home() {
     return () => clearTimeout(t)
   }, [])
 
-  // Scroll-driven journey from hero to pillars.
-  // Computes a 0..1 progress mapped to scrollY ∈ [0, pillarsTop] and exposes it
-  // as --journey on the .home root. Pillars text reveals + X logo frame scrubbing
-  // are derived from this single value in CSS / per-frame inline styles.
-  // When the user has fully landed on pillars (settled), we hand off the X logo
-  // to its idle 5-frame loop (the existing keyframe animation behaviour).
+  // Detect whether the viewport supports the pinned cinematic experience.
+  // Pinning needs both enough vertical room (sticky stage must fit content)
+  // and a non-reduced-motion preference.
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // No scroll-driven motion. Just reveal pillars when they enter view.
-      const el = pillarsRef.current
-      if (!el) return
+    const mq = window.matchMedia(
+      '(min-width: 1024px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)'
+    )
+    const apply = () => setPinnedMode(mq.matches)
+    apply()
+    mq.addEventListener?.('change', apply)
+    return () => mq.removeEventListener?.('change', apply)
+  }, [])
+
+  // Drive the single-stage journey, cinematic auto-play style:
+  //   - Pinned mode: rAF loop reads a TARGET journey from scroll position and
+  //     lerps a CURRENT journey toward it (smoothing factor SMOOTH). The
+  //     scroll triggers and seeks the animation, but the cinematic plays out
+  //     at its own pace — quick wheel flicks don't snap the morph; it eases
+  //     into place. This is how most Awwwards sites feel "auto-play with scroll".
+  //   - Flow mode (mobile / reduced motion): IntersectionObserver flips
+  //     settled when the pillars section enters the viewport.
+  useEffect(() => {
+    const home = homeRef.current
+    if (!home) return
+
+    if (!pinnedMode) {
+      home.style.removeProperty('--journey')
+      xframeRefs.current.forEach((el) => { if (el) el.style.opacity = '' })
+
+      const pillars = pillarsRef.current
+      if (!pillars) return
       const obs = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
+            settledRef.current = true
             setPillarsSettled(true)
             obs.disconnect()
           }
         },
         { threshold: 0.3 }
       )
-      obs.observe(el)
+      obs.observe(pillars)
       return () => obs.disconnect()
     }
 
-    let raf = 0
-    let pendingFrame = false
+    // Pinned mode: lerped scroll-driven journey
+    const SMOOTH = 0.08 // per-frame lerp coefficient (~0.5s catch-up at 60fps)
+    let target = 0
+    let current = 0
+    let rafId = 0
+    let active = false
 
-    const update = () => {
-      pendingFrame = false
-      const home = homeRef.current
-      const pillars = pillarsRef.current
-      if (!home || !pillars) return
+    const apply = () => {
+      home.style.setProperty('--journey', current.toFixed(4))
 
-      const pillarsTop = pillars.offsetTop
-      // Journey reaches 1 a hair before pillars top hits scroll origin so the
-      // reveal cascade finishes while pillars is fully in frame, not after.
-      const end = Math.max(1, pillarsTop - 60)
-      const progress = Math.max(0, Math.min(1, window.scrollY / end))
-      home.style.setProperty('--journey', progress.toFixed(4))
-
-      // Scrub the X logo frames between journey [0.45, 0.95]. Each frame i has
-      // peak opacity at framePos = i, fading linearly to 0 at framePos = i±1
-      // — adjacent frames cross-fade to 0.5/0.5 in the middle, summing to ~1.
-      const localProgress = Math.max(0, Math.min(1, (progress - 0.45) / 0.5))
-      const framePos = localProgress * 4 // 0..4 over 5 frames
-      const isSettled = progress >= 1
-      xframeRefs.current.forEach((el, i) => {
-        if (!el) return
-        if (isSettled) {
-          // Hand over to keyframe-driven idle loop.
-          el.style.opacity = ''
-        } else {
+      // X logo frame scrubbing during journey ∈ [0.55, 0.85] (width 0.30,
+      // gives each frame ~6% of journey for plateau visibility).
+      const isSettled = current >= 0.98
+      if (isSettled) {
+        xframeRefs.current.forEach((el) => { if (el) el.style.opacity = '' })
+      } else {
+        const localProgress = clamp01((current - 0.55) / 0.30)
+        const framePos = localProgress * 4
+        xframeRefs.current.forEach((el, i) => {
+          if (!el) return
           const distance = Math.abs(framePos - i)
-          el.style.opacity = String(Math.max(0, 1 - distance))
-        }
-      })
+          // Plateau: opacity 1 when distance < 0.45, crossfade 0.45 → 0.55.
+          const opacity = clamp01((0.55 - distance) * 10)
+          el.style.opacity = String(opacity)
+        })
+      }
 
       if (isSettled !== settledRef.current) {
         settledRef.current = isSettled
@@ -90,24 +110,50 @@ function Home() {
       }
     }
 
-    const onScroll = () => {
-      if (pendingFrame) return
-      pendingFrame = true
-      raf = requestAnimationFrame(update)
+    const computeTarget = () => {
+      const act = actRef.current
+      if (!act) return
+      const vh = window.innerHeight
+      const start = act.offsetTop
+      const end = start + act.offsetHeight - vh + 70
+      target = clamp01((window.scrollY - start) / Math.max(1, end - start))
     }
 
-    update() // prime initial value (e.g. when reloaded mid-page)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
+    const tick = () => {
+      computeTarget()
+      const delta = target - current
+      if (Math.abs(delta) < 0.0005) {
+        current = target
+        apply()
+        active = false
+        return
+      }
+      current += delta * SMOOTH
+      apply()
+      rafId = requestAnimationFrame(tick)
+    }
+
+    const start = () => {
+      if (active) return
+      active = true
+      rafId = requestAnimationFrame(tick)
+    }
+
+    // Prime initial state and start loop on first scroll/resize.
+    computeTarget()
+    current = target
+    apply()
+    const onChange = () => start()
+    window.addEventListener('scroll', onChange, { passive: true })
+    window.addEventListener('resize', onChange, { passive: true })
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onChange)
+      window.removeEventListener('resize', onChange)
+      cancelAnimationFrame(rafId)
     }
-  }, [])
+  }, [pinnedMode])
 
-  // Idle X logo loop — only after the user has settled into the pillars section.
-  // Until then, frames are scrubbed by scroll position (above).
+  // Idle X logo loop — only after the user has fully settled into pillars.
   useEffect(() => {
     if (!pillarsSettled) {
       setLogoPlaying(false)
@@ -127,7 +173,7 @@ function Home() {
     }
   }, [pillarsSettled])
 
-  // Subtle mouse-driven parallax on hero layers
+  // Subtle mouse-driven parallax on the hero curtain (unchanged).
   useEffect(() => {
     const hero = heroRef.current
     if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -145,71 +191,79 @@ function Home() {
   }, [])
 
   return (
-    <div ref={homeRef} className={`home${pillarsSettled ? ' home--settled' : ''}`}>
-      <section
-        ref={heroRef}
-        className={`hero${loaded ? ' hero--loaded' : ''}${settled ? ' hero--settled' : ''}`}
-      >
-        <div className="hero__grain" />
-        <div className="hero__gradient" />
-        <div className="hero__overlay" />
-        <div className="hero__vignette" />
-        <div className="hero__content">
-          <h1 className="hero__title">
-            <img className="hero__logo" src="/logoxiryn.png" alt="XYRIN" />
-          </h1>
-          <p className="hero__tagline">
-            {['Convertimos', 'conceptos', 'en', 'experiencias'].map((word, i) => (
-              <span key={i} className="hero__tagline-word" style={{ '--w': i }}>
-                {word}
-              </span>
-            ))}
-          </p>
-        </div>
-      </section>
-
-      <section ref={pillarsRef} className="pillars">
-        <div className="pillars__content">
-          <p className="pillars__intro">
-            {PILLARS_INTRO_WORDS.map((entry, i) => {
-              const isBrand = typeof entry === 'object'
-              const text = isBrand ? entry.brand : entry
-              return (
-                <span
-                  key={i}
-                  className={`pillars__intro-word${isBrand ? ' pillars__brand' : ''}`}
-                  style={{ '--w': i }}
-                >
-                  {text}
+    <div
+      ref={homeRef}
+      className={`home${pinnedMode ? ' home--pinned' : ''}${pillarsSettled ? ' home--settled' : ''}`}
+    >
+      <div ref={actRef} className="act">
+        <div className="stage">
+        <section ref={heroRef} className={`stage__phase stage__phase--hero hero${loaded ? ' hero--loaded' : ''}${settled ? ' hero--settled' : ''}`}>
+          <div className="hero__grain" />
+          <div className="hero__gradient" />
+          <div className="hero__overlay" />
+          <div className="hero__vignette" />
+          <div className="hero__content">
+            <h1 className="hero__title">
+              <img className="hero__logo" src="/logoxiryn.png" alt="XYRIN" />
+            </h1>
+            <p className="hero__tagline">
+              {HERO_TAGLINE_WORDS.map((word, i) => (
+                <span key={i} className="hero__tagline-word" style={{ '--w': i }}>
+                  {word}
                 </span>
-              )
-            })}
-          </p>
-
-          <div className={`xlogo${logoPlaying ? ' xlogo--playing' : ''}`} aria-hidden="true">
-            {[1, 2, 3, 4, 5].map((n, i) => (
-              <img
-                key={n}
-                ref={(el) => { xframeRefs.current[i] = el }}
-                className={`xlogo__frame xlogo__frame--${n}`}
-                src={n === 1 ? '/logo-frames/Default.svg' : `/logo-frames/Variant${n}.svg`}
-                alt=""
-              />
-            ))}
+              ))}
+            </p>
           </div>
+        </section>
 
-          <div className="pillars__list-wrap">
-            <h2 className="pillars__heading">Nos enfocamos en tres pilares de solución:</h2>
-            <ul className="pillars__list">
-              <li style={{ '--p': 0 }}>Organización de elementos funcionales.</li>
-              <li style={{ '--p': 1 }}>Optimización de espacios.</li>
-              <li style={{ '--p': 2 }}>Experiencia de usuario.</li>
-            </ul>
+        <section ref={pillarsRef} className="stage__phase stage__phase--pillars pillars">
+          <div className="pillars__content">
+            <p className="pillars__intro">
+              {PILLARS_INTRO_WORDS.map((entry, i) => {
+                const isBrand = typeof entry === 'object'
+                const text = isBrand ? entry.brand : entry
+                return (
+                  <span
+                    key={i}
+                    className={`pillars__intro-word${isBrand ? ' pillars__brand' : ''}`}
+                    style={{ '--w': i }}
+                  >
+                    {text}
+                  </span>
+                )
+              })}
+            </p>
+
+            <div className={`xlogo${logoPlaying ? ' xlogo--playing' : ''}`} aria-hidden="true">
+              {[1, 2, 3, 4, 5].map((n, i) => (
+                <img
+                  key={n}
+                  ref={(el) => { xframeRefs.current[i] = el }}
+                  className={`xlogo__frame xlogo__frame--${n}`}
+                  src={n === 1 ? '/logo-frames/Default.svg' : `/logo-frames/Variant${n}.svg`}
+                  alt=""
+                />
+              ))}
+            </div>
+
+            <div className="pillars__list-wrap">
+              <h2 className="pillars__heading">Nos enfocamos en tres pilares de solución:</h2>
+              <ul className="pillars__list">
+                <li style={{ '--p': 0 }}>Organización de elementos funcionales.</li>
+                <li style={{ '--p': 1 }}>Optimización de espacios.</li>
+                <li style={{ '--p': 2 }}>Experiencia de usuario.</li>
+              </ul>
+            </div>
           </div>
+        </section>
         </div>
-      </section>
+      </div>
     </div>
   )
+}
+
+function clamp01(v) {
+  return v < 0 ? 0 : v > 1 ? 1 : v
 }
 
 export default Home

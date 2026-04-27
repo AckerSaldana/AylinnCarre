@@ -1,13 +1,66 @@
 /* ================================================
    HOME — XYRIN STUDIO
+   Single-pin scroll choreography (pinned mode):
+     - .act is tall (500vh) and provides the scroll runway.
+     - .stage is sticky inside .act, pinning the visible scene.
+     - Two .stage__phase elements (hero / pillars) overlap inside the stage,
+       crossfading by opacity as --journey moves 0..1.
+   In flow mode (mobile / reduced motion), .stage is just a normal block
+   and the two phases stack vertically as ordinary sections.
    ================================================ */
+
+.act {
+  position: relative;
+}
+
+.stage {
+  position: relative;
+}
+
+.stage__phase {
+  position: relative;
+}
+
+/* ---------- Pinned mode: tall act + sticky stage + layered phases ---------- */
+
+.home--pinned .act {
+  height: 500vh;
+}
+
+.home--pinned .stage {
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.home--pinned .stage__phase {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(40px, 6vw, 80px) 24px;
+}
+
+/* Hero phase fades out, beige phase fades in over journey 0.40 → 0.58. */
+.home--pinned .stage__phase--hero {
+  opacity: clamp(0, calc(1 - (var(--journey, 0) - 0.40) / 0.18), 1);
+  pointer-events: none;
+}
+
+.home--pinned .stage__phase--pillars {
+  opacity: clamp(0, calc((var(--journey, 0) - 0.40) / 0.18), 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ---------- Hero ---------- */
 
 .hero {
   position: relative;
-  /* Fill the viewport below the sticky navbar so the hero is the only thing
-     visible on landing — anything below requires scrolling. */
   min-height: calc(100vh - 70px);
   min-height: calc(100dvh - 70px);
   display: flex;
@@ -19,11 +72,13 @@
   --my: 0px;
 }
 
-/* Hero background photo
-   Mouse parallax (translate) + scroll-driven dolly-in (scale via --journey).
-   We split into separate translate / scale properties so each can transition at
-   its own pace — translate stays buttery for mouse parallax, scale tracks scroll
-   tightly so it doesn't visibly trail the user's finger. */
+.home--pinned .hero {
+  min-height: 0;
+}
+
+/* Hero background photo: mouse parallax (translate) + scroll-driven
+   dolly-in (scale via --journey). Split into individual transform
+   properties so each can transition at its own pace. */
 .hero__gradient {
   position: absolute;
   inset: -20px;
@@ -36,7 +91,6 @@
     scale 0.12s linear;
 }
 
-/* Dark overlay to ensure text contrast */
 .hero__overlay {
   position: absolute;
   inset: 0;
@@ -45,7 +99,6 @@
   pointer-events: none;
 }
 
-/* Film grain texture */
 .hero__grain {
   position: absolute;
   inset: -100%;
@@ -72,8 +125,8 @@
   90% { transform: translate(-10%, 10%); }
 }
 
-/* Cinematic vignette — tightens (radial closes inward) as the user scrolls
-   away from the hero, like a camera iris closing on the curtain. */
+/* Cinematic vignette: closes inward as the user pushes through the hero,
+   like a camera iris contracting onto the curtain. */
 .hero__vignette {
   position: absolute;
   inset: 0;
@@ -88,7 +141,6 @@
   transition: background 0.12s linear;
 }
 
-/* Thin line at bottom of hero */
 .hero::after {
   content: '';
   position: absolute;
@@ -101,33 +153,29 @@
   pointer-events: none;
 }
 
-/* Content
-   Parallax LAG: as the user scrolls past the hero, the content drifts down
-   (positive translateY) so it appears to "stay" in the viewport longer than
-   the scroll demands — like the curtain holding it back. Combined with a soft
-   blur + opacity decay, the hero feels left behind, not just scrolled past. */
+/* Hero content: logo + tagline lift up and dissolve over journey 0.30 → 0.50,
+   before the bg crossfades. The user sees the title card dissolve, then the
+   curtain falls away to reveal the beige stage. */
 .hero__content {
   position: relative;
   z-index: 4;
   text-align: center;
   padding: 60px 24px;
-  transform: translateY(calc(var(--journey, 0) * 90px));
-  filter: blur(calc(var(--journey, 0) * 4px));
-  opacity: calc(1 - var(--journey, 0) * 0.7);
-  transition:
-    transform 0.12s linear,
-    filter 0.12s linear,
-    opacity 0.12s linear;
-  will-change: transform, filter, opacity;
 }
 
-/* Title */
+.home--pinned .hero__content {
+  --content-out: clamp(0, calc((var(--journey, 0) - 0.30) / 0.20), 1);
+  opacity: calc(1 - var(--content-out));
+  transform: translateY(calc(var(--content-out) * -50px));
+  filter: blur(calc(var(--content-out) * 5px));
+  will-change: opacity, transform, filter;
+}
+
 .hero__title {
   display: flex;
   justify-content: center;
 }
 
-/* Logo image */
 .hero__logo {
   width: clamp(300px, 70vw, 850px);
   height: auto;
@@ -136,7 +184,6 @@
   filter: blur(8px);
 }
 
-/* Entrance reveal */
 .hero--loaded .hero__logo {
   opacity: 1;
   transform: translateY(0);
@@ -147,7 +194,6 @@
     filter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
 }
 
-/* Hero tagline — under the XYRIN logo, word-by-word reveal */
 .hero__tagline {
   margin: clamp(16px, 2vw, 28px) 0 0;
   font-family: var(--font-heading);
@@ -172,7 +218,6 @@
     opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
     filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-  /* Empieza una vez que la PNG ya entró */
   transition-delay: calc(1.05s + var(--w) * 0.12s);
 }
 
@@ -182,7 +227,7 @@
   filter: blur(0);
 }
 
-/* ---------- Pillars section (cinematic) ---------- */
+/* ---------- Pillars ---------- */
 
 .pillars {
   background-color: var(--beige);
@@ -200,9 +245,14 @@
   gap: clamp(48px, 7vw, 96px);
 }
 
-/* Intro paragraph rendered as flex-wrapped words so each can be revealed on
-   its own scroll threshold — a kinetic cascade tied to the user's gesture
-   rather than a single timer. */
+.home--pinned .pillars__content {
+  gap: clamp(28px, 4vw, 60px);
+  width: 100%;
+  max-width: 960px;
+}
+
+/* Intro paragraph: 16 words flex-wrapping, each revealing on its own
+   threshold for a kinetic cascade tied to the user's gesture. */
 .pillars__intro {
   margin: 0;
   max-width: 880px;
@@ -219,33 +269,26 @@
 }
 
 .pillars__intro-word {
-  /* Each word reveals when --journey crosses its threshold. Thresholds spread
-     over [0.5, 0.875] so the cascade fills the second half of the journey. */
-  --threshold: calc(0.5 + var(--w, 0) * 0.024);
-  --span: 0.12;
-  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
   display: inline-block;
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.home--pinned .pillars__intro-word {
+  /* 16 words: thresholds 0.45 → 0.57 (stride 0.008), span 0.08.
+     Cascade complete by ~0.65, just before X frame scrub starts at 0.65. */
+  --threshold: calc(0.45 + var(--w, 0) * 0.008);
+  --span: 0.08;
+  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
   opacity: var(--local);
   transform: translateY(calc((1 - var(--local)) * 14px));
-  filter: blur(calc((1 - var(--local)) * 4px));
+  filter: blur(calc((1 - var(--local)) * 5px));
   will-change: opacity, transform, filter;
 }
 
 .pillars__brand {
   letter-spacing: 0.04em;
-}
-
-/* Reuse .xlogo from below; just sizes it down to fit between blocks */
-.pillars .xlogo {
-  width: 140px;
-  height: 140px;
-}
-
-.pillars__list-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(20px, 3vw, 32px);
 }
 
 .pillars__heading {
@@ -256,13 +299,27 @@
   line-height: 1;
   letter-spacing: 0;
   color: #908986;
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.home--pinned .pillars__heading {
+  /* Reveal after the X frame scrub completes (frames finish at journey ≈ 0.85). */
   --threshold: 0.85;
-  --span: 0.1;
+  --span: 0.07;
   --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
   opacity: var(--local);
   transform: translateY(calc((1 - var(--local)) * 16px));
   filter: blur(calc((1 - var(--local)) * 3px));
   will-change: opacity, transform, filter;
+}
+
+.pillars__list-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 3vw, 32px);
 }
 
 .pillars__list {
@@ -281,10 +338,16 @@
 }
 
 .pillars__list li {
-  /* Each pillar item enters with its own threshold (0.88, 0.92, 0.96), so the
-     three of them cascade as the user finishes scrolling into the section. */
-  --threshold: calc(0.88 + var(--p, 0) * 0.04);
-  --span: 0.06;
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.home--pinned .pillars__list li {
+  /* Cascade: thresholds 0.88, 0.91, 0.94 with span 0.04 each.
+     Settled handoff at journey >= 0.98 (set by JS). */
+  --threshold: calc(0.88 + var(--p, 0) * 0.03);
+  --span: 0.04;
   --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
   opacity: var(--local);
   transform: translateY(calc((1 - var(--local)) * 18px));
@@ -294,15 +357,24 @@
 
 /* ---------- Animated X Logo (frame sequence) ---------- */
 
-/* Container reveals as part of the scroll journey: scales 0.85 → 1.0 + fades
-   in over journey [0.55, 0.78]. After that the inside frames are scrubbed by
-   the user's scroll until pillarsSettled hands off to the idle keyframe loop. */
 .xlogo {
   position: relative;
   width: 200px;
   height: 200px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.pillars .xlogo {
+  width: 140px;
+  height: 140px;
+}
+
+.home--pinned .xlogo {
+  /* Container reveals during journey 0.55 → 0.65, just before the frame
+     scrub starts at 0.65. */
   --threshold: 0.55;
-  --span: 0.23;
+  --span: 0.10;
   --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
   opacity: var(--local);
   transform: scale(calc(0.85 + var(--local) * 0.15));
@@ -318,38 +390,22 @@
   opacity: 0;
 }
 
-/* Default visible frame: Default.svg. Always loaded eagerly. JS sets
-   per-frame inline opacities while the user scrolls (scrubbing through the
-   sequence). When pillarsSettled fires, JS clears those inline overrides and
-   this rule restores the resting state — no flicker because both transitions
-   land on the same value (frame 1 = 1, others = 0). */
+/* Default visible frame at rest = Default.svg. JS sets per-frame inline
+   opacities while scrubbing (pinned mode) — overrides clear when settled
+   and this rule restores the resting state. */
 .xlogo__frame--1 {
   opacity: 1;
 }
 
-/* Smooth handover between idle-loop cycles (frame 5 forwards-fill → frame 1
-   resting state during the pause). Only applies post-settled to keep scroll
-   scrubbing instant. */
 .home--settled .xlogo__frame {
   transition: opacity 0.4s ease;
 }
 
-/* Playing: 2.5s sequence with cross-fade */
-.xlogo--playing .xlogo__frame--1 {
-  animation: showFrame1 2.5s linear forwards;
-}
-.xlogo--playing .xlogo__frame--2 {
-  animation: showFrame2 2.5s linear forwards;
-}
-.xlogo--playing .xlogo__frame--3 {
-  animation: showFrame3 2.5s linear forwards;
-}
-.xlogo--playing .xlogo__frame--4 {
-  animation: showFrame4 2.5s linear forwards;
-}
-.xlogo--playing .xlogo__frame--5 {
-  animation: showFrame5 2.5s linear forwards;
-}
+.xlogo--playing .xlogo__frame--1 { animation: showFrame1 2.5s linear forwards; }
+.xlogo--playing .xlogo__frame--2 { animation: showFrame2 2.5s linear forwards; }
+.xlogo--playing .xlogo__frame--3 { animation: showFrame3 2.5s linear forwards; }
+.xlogo--playing .xlogo__frame--4 { animation: showFrame4 2.5s linear forwards; }
+.xlogo--playing .xlogo__frame--5 { animation: showFrame5 2.5s linear forwards; }
 
 @keyframes showFrame1 {
   0%   { opacity: 1; }
@@ -357,7 +413,6 @@
   26%  { opacity: 0; }
   100% { opacity: 0; }
 }
-
 @keyframes showFrame2 {
   0%   { opacity: 0; }
   22%  { opacity: 0; }
@@ -366,7 +421,6 @@
   42%  { opacity: 0; }
   100% { opacity: 0; }
 }
-
 @keyframes showFrame3 {
   0%   { opacity: 0; }
   38%  { opacity: 0; }
@@ -375,7 +429,6 @@
   58%  { opacity: 0; }
   100% { opacity: 0; }
 }
-
 @keyframes showFrame4 {
   0%   { opacity: 0; }
   54%  { opacity: 0; }
@@ -384,12 +437,36 @@
   78%  { opacity: 0; }
   100% { opacity: 0; }
 }
-
 @keyframes showFrame5 {
   0%   { opacity: 0; }
   74%  { opacity: 0; }
   78%  { opacity: 1; }
   100% { opacity: 1; }
+}
+
+/* ---------- Settled overrides (pinned): snap journey-driven elements
+   to their fully-revealed final state once journey reaches 0.98, guarding
+   against floating-point gaps in clamp(). ---------- */
+
+.home--settled.home--pinned .stage__phase--hero {
+  opacity: 0;
+}
+
+.home--settled.home--pinned .stage__phase--pillars {
+  opacity: 1;
+}
+
+.home--settled.home--pinned .pillars__intro-word,
+.home--settled.home--pinned .pillars__heading,
+.home--settled.home--pinned .pillars__list li {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.home--settled.home--pinned .xlogo {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* ---------- Responsive ---------- */
@@ -432,27 +509,6 @@
   .pillars__list {
     font-size: 20px;
   }
-}
-
-/* Once the journey is complete (or in reduced-motion mode the IntersectionObserver
-   sets it directly), make sure all the journey-driven elements snap to their
-   fully-revealed state. This guards against tiny floating-point gaps from clamp
-   and keeps the section stable while the X logo idle loop runs. */
-.home--settled .hero__content {
-  /* Hero remains "left behind" — keep its scroll-driven offset frozen. */
-}
-
-.home--settled .pillars__intro-word,
-.home--settled .pillars__heading,
-.home--settled .pillars__list li {
-  opacity: 1;
-  transform: none;
-  filter: none;
-}
-
-.home--settled .xlogo {
-  opacity: 1;
-  transform: scale(1);
 }
 
 /* ---------- Reduced motion ---------- */

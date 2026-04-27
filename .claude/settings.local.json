@@ -7,7 +7,9 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(npx wrangler *)"
+      "Bash(npx wrangler *)",
+      "Bash(git -c advice.detachedHead=false checkout ecd8984)",
+      "Bash(git checkout *)"
     ]
   }
 }

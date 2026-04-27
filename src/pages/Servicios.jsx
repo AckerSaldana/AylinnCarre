@@ -8,7 +8,7 @@ const services = [
     title: 'Interiorismo',
     image: '/interiorismo.jpg',
     overlayColor: 'rgba(158, 151, 107, 0.67)',
-    hoverColor: 'rgba(255, 246, 193, 0.67)',
+    outlineColor: '#9E976B',
     description: 'Enfocado en brindar soluciones que anticipen las necesidades del usuario y crear experiencias a su medida.',
     descColor: '#5A5538',
   },
@@ -17,7 +17,7 @@ const services = [
     title: 'Mobiliario',
     image: '/mobiliario.jpg',
     overlayColor: 'rgba(219, 143, 131, 0.67)',
-    hoverColor: 'rgba(255, 210, 202, 0.75)',
+    outlineColor: '#DB8F83',
     description: 'Productos diseñados desde la ergonomía consciente con la intención de mejorar el bienestar cotidiano.',
     descColor: '#75443C',
   },
@@ -31,8 +31,8 @@ function Servicios() {
 
         <div className="servicios__grid">
           {services.map((service) => (
-            <article key={service.id} className={`servicios__card${service.hoverColor ? ' servicios__card--has-hover' : ''}`}
-              style={service.hoverColor ? { '--hover-color': service.hoverColor } : undefined}>
+            <article key={service.id} className={`servicios__card${service.outlineColor ? ' servicios__card--has-hover' : ''}`}
+              style={service.outlineColor ? { '--outline-color': service.outlineColor } : undefined}>
               <img src={service.image} alt={service.title} />
               <div className="servicios__card-overlay" style={service.overlayColor ? { backgroundColor: service.overlayColor } : undefined}>
                 <h2 className="servicios__card-title">{service.title}</h2>

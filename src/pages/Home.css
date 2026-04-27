@@ -19,14 +19,21 @@
   --my: 0px;
 }
 
-/* Hero background photo */
+/* Hero background photo
+   Mouse parallax (translate) + scroll-driven dolly-in (scale via --journey).
+   We split into separate translate / scale properties so each can transition at
+   its own pace — translate stays buttery for mouse parallax, scale tracks scroll
+   tightly so it doesn't visibly trail the user's finger. */
 .hero__gradient {
   position: absolute;
   inset: -20px;
   background: url('/heroimage.jpg') center / cover no-repeat;
   pointer-events: none;
-  transform: translate(var(--mx), var(--my));
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  translate: var(--mx) var(--my);
+  scale: calc(1 + var(--journey, 0) * 0.06);
+  transition:
+    translate 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    scale 0.12s linear;
 }
 
 /* Dark overlay to ensure text contrast */
@@ -65,18 +72,20 @@
   90% { transform: translate(-10%, 10%); }
 }
 
-/* Cinematic vignette */
+/* Cinematic vignette — tightens (radial closes inward) as the user scrolls
+   away from the hero, like a camera iris closing on the curtain. */
 .hero__vignette {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 70% 65% at center,
+    ellipse calc(70% - var(--journey, 0) * 25%) calc(65% - var(--journey, 0) * 22%) at center,
     transparent 0%,
-    rgba(15, 3, 6, 0.3) 65%,
-    rgba(10, 2, 4, 0.55) 100%
+    rgba(15, 3, 6, calc(0.3 + var(--journey, 0) * 0.25)) 65%,
+    rgba(10, 2, 4, calc(0.55 + var(--journey, 0) * 0.35)) 100%
   );
   pointer-events: none;
   z-index: 2;
+  transition: background 0.12s linear;
 }
 
 /* Thin line at bottom of hero */
@@ -92,12 +101,24 @@
   pointer-events: none;
 }
 
-/* Content */
+/* Content
+   Parallax LAG: as the user scrolls past the hero, the content drifts down
+   (positive translateY) so it appears to "stay" in the viewport longer than
+   the scroll demands — like the curtain holding it back. Combined with a soft
+   blur + opacity decay, the hero feels left behind, not just scrolled past. */
 .hero__content {
   position: relative;
   z-index: 4;
   text-align: center;
   padding: 60px 24px;
+  transform: translateY(calc(var(--journey, 0) * 90px));
+  filter: blur(calc(var(--journey, 0) * 4px));
+  opacity: calc(1 - var(--journey, 0) * 0.7);
+  transition:
+    transform 0.12s linear,
+    filter 0.12s linear,
+    opacity 0.12s linear;
+  will-change: transform, filter, opacity;
 }
 
 /* Title */
@@ -179,6 +200,9 @@
   gap: clamp(48px, 7vw, 96px);
 }
 
+/* Intro paragraph rendered as flex-wrapped words so each can be revealed on
+   its own scroll threshold — a kinetic cascade tied to the user's gesture
+   rather than a single timer. */
 .pillars__intro {
   margin: 0;
   max-width: 880px;
@@ -188,23 +212,27 @@
   line-height: 1.4;
   letter-spacing: 0;
   color: #908986;
-  opacity: 0;
-  transform: translateY(20px);
-  filter: blur(4px);
-  transition:
-    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-    filter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.28em;
+}
+
+.pillars__intro-word {
+  /* Each word reveals when --journey crosses its threshold. Thresholds spread
+     over [0.5, 0.875] so the cascade fills the second half of the journey. */
+  --threshold: calc(0.5 + var(--w, 0) * 0.024);
+  --span: 0.12;
+  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
+  display: inline-block;
+  opacity: var(--local);
+  transform: translateY(calc((1 - var(--local)) * 14px));
+  filter: blur(calc((1 - var(--local)) * 4px));
+  will-change: opacity, transform, filter;
 }
 
 .pillars__brand {
   letter-spacing: 0.04em;
-}
-
-.pillars--visible .pillars__intro {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
 }
 
 /* Reuse .xlogo from below; just sizes it down to fit between blocks */
@@ -228,19 +256,13 @@
   line-height: 1;
   letter-spacing: 0;
   color: #908986;
-  opacity: 0;
-  transform: translateY(16px);
-  filter: blur(3px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s,
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s,
-    filter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s;
-}
-
-.pillars--visible .pillars__heading {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+  --threshold: 0.85;
+  --span: 0.1;
+  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
+  opacity: var(--local);
+  transform: translateY(calc((1 - var(--local)) * 16px));
+  filter: blur(calc((1 - var(--local)) * 3px));
+  will-change: opacity, transform, filter;
 }
 
 .pillars__list {
@@ -259,38 +281,32 @@
 }
 
 .pillars__list li {
-  opacity: 0;
-  transform: translateY(18px);
-  filter: blur(4px);
-  transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(1.7s + var(--p) * 0.18s);
-}
-
-.pillars--visible .pillars__list li {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0);
+  /* Each pillar item enters with its own threshold (0.88, 0.92, 0.96), so the
+     three of them cascade as the user finishes scrolling into the section. */
+  --threshold: calc(0.88 + var(--p, 0) * 0.04);
+  --span: 0.06;
+  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
+  opacity: var(--local);
+  transform: translateY(calc((1 - var(--local)) * 18px));
+  filter: blur(calc((1 - var(--local)) * 4px));
+  will-change: opacity, transform, filter;
 }
 
 /* ---------- Animated X Logo (frame sequence) ---------- */
 
+/* Container reveals as part of the scroll journey: scales 0.85 → 1.0 + fades
+   in over journey [0.55, 0.78]. After that the inside frames are scrubbed by
+   the user's scroll until pillarsSettled hands off to the idle keyframe loop. */
 .xlogo {
   position: relative;
   width: 200px;
   height: 200px;
-  opacity: 0;
-  transform: scale(0.85);
-  transition:
-    opacity 0.8s ease 0.6s,
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
-}
-
-.pillars--visible .xlogo {
-  opacity: 1;
-  transform: scale(1);
+  --threshold: 0.55;
+  --span: 0.23;
+  --local: clamp(0, calc((var(--journey, 0) - var(--threshold)) / var(--span)), 1);
+  opacity: var(--local);
+  transform: scale(calc(0.85 + var(--local) * 0.15));
+  will-change: opacity, transform;
 }
 
 .xlogo__frame {
@@ -300,16 +316,22 @@
   height: 100%;
   object-fit: contain;
   opacity: 0;
-  /* Transition kicks in only when no keyframe animation is running (i.e. on
-     the handover between cycles). Smooths the snap from frame 5 (animation's
-     forwards-fill end) back to frame 1 (resting state) during the pause. */
-  transition: opacity 0.4s ease;
 }
 
-/* Default resting state: show first frame so it's always loaded and visible
-   before the sequence starts — the animation literally begins at frame 1. */
+/* Default visible frame: Default.svg. Always loaded eagerly. JS sets
+   per-frame inline opacities while the user scrolls (scrubbing through the
+   sequence). When pillarsSettled fires, JS clears those inline overrides and
+   this rule restores the resting state — no flicker because both transitions
+   land on the same value (frame 1 = 1, others = 0). */
 .xlogo__frame--1 {
   opacity: 1;
+}
+
+/* Smooth handover between idle-loop cycles (frame 5 forwards-fill → frame 1
+   resting state during the pause). Only applies post-settled to keep scroll
+   scrubbing instant. */
+.home--settled .xlogo__frame {
+  transition: opacity 0.4s ease;
 }
 
 /* Playing: 2.5s sequence with cross-fade */
@@ -412,6 +434,27 @@
   }
 }
 
+/* Once the journey is complete (or in reduced-motion mode the IntersectionObserver
+   sets it directly), make sure all the journey-driven elements snap to their
+   fully-revealed state. This guards against tiny floating-point gaps from clamp
+   and keeps the section stable while the X logo idle loop runs. */
+.home--settled .hero__content {
+  /* Hero remains "left behind" — keep its scroll-driven offset frozen. */
+}
+
+.home--settled .pillars__intro-word,
+.home--settled .pillars__heading,
+.home--settled .pillars__list li {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+.home--settled .xlogo {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* ---------- Reduced motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -426,9 +469,15 @@
     animation: none;
   }
 
-  .hero__gradient {
+  .hero__gradient,
+  .hero__vignette,
+  .hero__content {
     animation: none;
     transform: none;
+    translate: none;
+    scale: none;
+    filter: none;
+    opacity: 1;
     transition: none;
   }
 
@@ -448,12 +497,12 @@
     opacity: 0;
   }
 
-  .xlogo__frame--5 {
+  .xlogo__frame--1 {
     opacity: 1;
   }
 
   .hero__tagline-word,
-  .pillars__intro,
+  .pillars__intro-word,
   .pillars__heading,
   .pillars__list li {
     opacity: 1;

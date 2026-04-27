@@ -1,13 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import './Home.css'
 
+const PILLARS_INTRO_WORDS = [
+  'En', { brand: 'XYRIN' }, 'resolvemos', 'problemas', 'de', 'organización,',
+  'optimización', 'y', 'experiencia', 'de', 'usuario', 'para', 'hogares', 'e',
+  'industria', 'restaurantera.',
+]
+
 function Home() {
   const [loaded, setLoaded] = useState(false)
   const [settled, setSettled] = useState(false)
-  const [pillarsVisible, setPillarsVisible] = useState(false)
+  const [pillarsSettled, setPillarsSettled] = useState(false)
   const [logoPlaying, setLogoPlaying] = useState(false)
+  const homeRef = useRef(null)
   const heroRef = useRef(null)
   const pillarsRef = useRef(null)
+  const xframeRefs = useRef([])
+  const settledRef = useRef(false)
 
   // Staggered entrance animation
   useEffect(() => {
@@ -18,29 +27,92 @@ function Home() {
     return () => clearTimeout(t)
   }, [])
 
-  // Scroll-triggered pillars reveal
+  // Scroll-driven journey from hero to pillars.
+  // Computes a 0..1 progress mapped to scrollY ∈ [0, pillarsTop] and exposes it
+  // as --journey on the .home root. Pillars text reveals + X logo frame scrubbing
+  // are derived from this single value in CSS / per-frame inline styles.
+  // When the user has fully landed on pillars (settled), we hand off the X logo
+  // to its idle 5-frame loop (the existing keyframe animation behaviour).
   useEffect(() => {
-    const el = pillarsRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setPillarsVisible(true)
-          obs.disconnect()
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // No scroll-driven motion. Just reveal pillars when they enter view.
+      const el = pillarsRef.current
+      if (!el) return
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setPillarsSettled(true)
+            obs.disconnect()
+          }
+        },
+        { threshold: 0.3 }
+      )
+      obs.observe(el)
+      return () => obs.disconnect()
+    }
+
+    let raf = 0
+    let pendingFrame = false
+
+    const update = () => {
+      pendingFrame = false
+      const home = homeRef.current
+      const pillars = pillarsRef.current
+      if (!home || !pillars) return
+
+      const pillarsTop = pillars.offsetTop
+      // Journey reaches 1 a hair before pillars top hits scroll origin so the
+      // reveal cascade finishes while pillars is fully in frame, not after.
+      const end = Math.max(1, pillarsTop - 60)
+      const progress = Math.max(0, Math.min(1, window.scrollY / end))
+      home.style.setProperty('--journey', progress.toFixed(4))
+
+      // Scrub the X logo frames between journey [0.45, 0.95]. Each frame i has
+      // peak opacity at framePos = i, fading linearly to 0 at framePos = i±1
+      // — adjacent frames cross-fade to 0.5/0.5 in the middle, summing to ~1.
+      const localProgress = Math.max(0, Math.min(1, (progress - 0.45) / 0.5))
+      const framePos = localProgress * 4 // 0..4 over 5 frames
+      const isSettled = progress >= 1
+      xframeRefs.current.forEach((el, i) => {
+        if (!el) return
+        if (isSettled) {
+          // Hand over to keyframe-driven idle loop.
+          el.style.opacity = ''
+        } else {
+          const distance = Math.abs(framePos - i)
+          el.style.opacity = String(Math.max(0, 1 - distance))
         }
-      },
-      { threshold: 0.3 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
+      })
+
+      if (isSettled !== settledRef.current) {
+        settledRef.current = isSettled
+        setPillarsSettled(isSettled)
+      }
+    }
+
+    const onScroll = () => {
+      if (pendingFrame) return
+      pendingFrame = true
+      raf = requestAnimationFrame(update)
+    }
+
+    update() // prime initial value (e.g. when reloaded mid-page)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      cancelAnimationFrame(raf)
+    }
   }, [])
 
-  // Repeating logo animation: play → pause → replay.
-  // Hold the first play until the .xlogo container has finished its 0.6s-delay
-  // fade-in (CSS transition 0.8s ease 0.6s), otherwise frame 1 plays while the
-  // container is still at opacity 0 and the sequence appears to start at frame 2.
+  // Idle X logo loop — only after the user has settled into the pillars section.
+  // Until then, frames are scrubbed by scroll position (above).
   useEffect(() => {
-    if (!pillarsVisible) return
+    if (!pillarsSettled) {
+      setLogoPlaying(false)
+      return
+    }
     let intervalId
     const startId = setTimeout(() => {
       setLogoPlaying(true)
@@ -48,12 +120,12 @@ function Home() {
         setLogoPlaying(false)
         requestAnimationFrame(() => requestAnimationFrame(() => setLogoPlaying(true)))
       }, 2500 + 2500)
-    }, 1200)
+    }, 600)
     return () => {
       clearTimeout(startId)
       clearInterval(intervalId)
     }
-  }, [pillarsVisible])
+  }, [pillarsSettled])
 
   // Subtle mouse-driven parallax on hero layers
   useEffect(() => {
@@ -73,7 +145,7 @@ function Home() {
   }, [])
 
   return (
-    <div className="home">
+    <div ref={homeRef} className={`home${pillarsSettled ? ' home--settled' : ''}`}>
       <section
         ref={heroRef}
         className={`hero${loaded ? ' hero--loaded' : ''}${settled ? ' hero--settled' : ''}`}
@@ -96,21 +168,34 @@ function Home() {
         </div>
       </section>
 
-      <section
-        ref={pillarsRef}
-        className={`pillars${pillarsVisible ? ' pillars--visible' : ''}`}
-      >
+      <section ref={pillarsRef} className="pillars">
         <div className="pillars__content">
           <p className="pillars__intro">
-            En <span className="pillars__brand">XYRIN</span> resolvemos problemas de organización, optimización y experiencia de usuario para hogares e industria restaurantera.
+            {PILLARS_INTRO_WORDS.map((entry, i) => {
+              const isBrand = typeof entry === 'object'
+              const text = isBrand ? entry.brand : entry
+              return (
+                <span
+                  key={i}
+                  className={`pillars__intro-word${isBrand ? ' pillars__brand' : ''}`}
+                  style={{ '--w': i }}
+                >
+                  {text}
+                </span>
+              )
+            })}
           </p>
 
           <div className={`xlogo${logoPlaying ? ' xlogo--playing' : ''}`} aria-hidden="true">
-            <img className="xlogo__frame xlogo__frame--1" src="/logo-frames/Default.svg" alt="" />
-            <img className="xlogo__frame xlogo__frame--2" src="/logo-frames/Variant2.svg" alt="" />
-            <img className="xlogo__frame xlogo__frame--3" src="/logo-frames/Variant3.svg" alt="" />
-            <img className="xlogo__frame xlogo__frame--4" src="/logo-frames/Variant4.svg" alt="" />
-            <img className="xlogo__frame xlogo__frame--5" src="/logo-frames/Variant5.svg" alt="" />
+            {[1, 2, 3, 4, 5].map((n, i) => (
+              <img
+                key={n}
+                ref={(el) => { xframeRefs.current[i] = el }}
+                className={`xlogo__frame xlogo__frame--${n}`}
+                src={n === 1 ? '/logo-frames/Default.svg' : `/logo-frames/Variant${n}.svg`}
+                alt=""
+              />
+            ))}
           </div>
 
           <div className="pillars__list-wrap">
